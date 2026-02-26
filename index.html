@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Interactive heat map identifying optimal expansion markets for management consulting firms in Washington State. Scores cities across competition, SMB density, business maturity, and owner demographics." />
+  <title>WA Market Intelligence — Consulting Expansion Heat Map</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet.js -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Favicon inline -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
+</head>
+<body>
+
+<!-- ── Loading Overlay ──────────────────────────────────── -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading market intelligence data…</div>
+</div>
+
+<!-- ── Header ───────────────────────────────────────────── -->
+<header id="header">
+  <div class="header-logo">
+    <div class="header-logo-icon">📊</div>
+    <div class="header-title">
+      <h1>WA Market Intelligence</h1>
+      <span>Consulting Expansion Heat Map</span>
+    </div>
+  </div>
+
+  <div class="header-divider"></div>
+
+  <div class="header-stats">
+    <div class="header-stat">
+      <div class="header-stat-value" id="stat-cities">—</div>
+      <div class="header-stat-label">Cities Scored</div>
+    </div>
+    <div class="header-stat">
+      <div class="header-stat-value" id="stat-targets">—</div>
+      <div class="header-stat-label">Tier 3 Targets</div>
+    </div>
+    <div class="header-stat">
+      <div class="header-stat-value" id="stat-top-city" style="color:var(--accent-emerald)">—</div>
+      <div class="header-stat-label">Top Market</div>
+    </div>
+    <div class="header-stat">
+      <div class="header-stat-value" id="stat-top-score" style="color:var(--accent-emerald)">—</div>
+      <div class="header-stat-label">Top Score</div>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn btn-icon" id="btn-weights" title="Adjust scoring weights">
+      ⚖️ Weights
+    </button>
+    <button class="btn btn-icon" id="btn-sources" title="Data sources & methodology">
+      📋 Sources
+    </button>
+  </div>
+</header>
+
+<!-- ── Weights Panel (dropdown) ─────────────────────────── -->
+<div id="weights-panel">
+  <div class="weights-title">⚖️ Adjust Scoring Weights</div>
+  <p style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">
+    Customize how each criterion contributes to the Opportunity Score.
+    Weights must sum to 100%.
+  </p>
+
+  <div class="weight-item">
+    <div class="weight-header">
+      <span class="weight-label">🏢 Consulting Firm Absence</span>
+      <span class="weight-value" id="wv-consultingAbsence">30%</span>
+    </div>
+    <input type="range" class="weight-slider" id="w-consultingAbsence" min="5" max="60" step="5" />
+  </div>
+
+  <div class="weight-item">
+    <div class="weight-header">
+      <span class="weight-label">🏬 Target Business Abundance</span>
+      <span class="weight-value" id="wv-businessAbundance">25%</span>
+    </div>
+    <input type="range" class="weight-slider" id="w-businessAbundance" min="5" max="50" step="5" />
+  </div>
+
+  <div class="weight-item">
+    <div class="weight-header">
+      <span class="weight-label">🏙️ City Tier Classification</span>
+      <span class="weight-value" id="wv-cityTier">20%</span>
+    </div>
+    <input type="range" class="weight-slider" id="w-cityTier" min="5" max="50" step="5" />
+  </div>
+
+  <div class="weight-item">
+    <div class="weight-header">
+      <span class="weight-label">📅 Business Maturity (3+ yrs)</span>
+      <span class="weight-value" id="wv-businessMaturity">15%</span>
+    </div>
+    <input type="range" class="weight-slider" id="w-businessMaturity" min="5" max="40" step="5" />
+  </div>
+
+  <div class="weight-item">
+    <div class="weight-header">
+      <span class="weight-label">👴 Owner Demographics (55+)</span>
+      <span class="weight-value" id="wv-ownerDemographics">10%</span>
+    </div>
+    <input type="range" class="weight-slider" id="w-ownerDemographics" min="5" max="40" step="5" />
+  </div>
+
+  <div class="weight-total valid" id="weight-total">Total: 100%</div>
+
+  <div class="weights-actions">
+    <button class="btn" id="btn-reset-weights" style="flex:1">Reset Defaults</button>
+    <button class="btn btn-primary" id="btn-apply-weights" style="flex:1">Apply & Recalculate</button>
+  </div>
+</div>
+
+<!-- ── Main Layout ───────────────────────────────────────── -->
+<div id="layout">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <h2>City Rankings</h2>
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="city-search" placeholder="Search city or county…" />
+      </div>
+    </div>
+
+    <!-- Tier filter pills -->
+    <div class="tier-filters">
+      <div class="tier-pill active" data-tier="all">All</div>
+      <div class="tier-pill" data-tier="3">🟢 Tier 3</div>
+      <div class="tier-pill" data-tier="4">🟡 Tier 4</div>
+      <div class="tier-pill" data-tier="2">🟠 Tier 2</div>
+    </div>
+
+    <!-- City list -->
+    <div id="city-list"></div>
+
+    <div class="sidebar-footer">
+      <span class="sidebar-footer-text" id="list-count">— cities</span>
+      <span class="sidebar-footer-text">Data: 2021 ACS / CBP</span>
+    </div>
+  </aside>
+
+  <!-- Map -->
+  <div id="map-wrapper">
+    <div id="map"></div>
+
+    <!-- Map controls -->
+    <div class="map-controls">
+      <div class="map-control-group">
+        <button class="map-control-btn" id="btn-reset-view" title="Reset map view">⌖</button>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div id="map-legend">
+      <div class="legend-title">Opportunity Score</div>
+      <div class="legend-items">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#10b981"></div>
+          <span>80–100 &nbsp;Excellent</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#34d399"></div>
+          <span>68–79 &nbsp;&nbsp;Strong</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#84cc16"></div>
+          <span>55–67 &nbsp;&nbsp;Moderate</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#eab308"></div>
+          <span>44–54 &nbsp;&nbsp;Limited</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ef4444"></div>
+          <span>0–43 &nbsp;&nbsp;&nbsp;Low</span>
+        </div>
+        <div class="legend-divider"></div>
+        <div class="legend-title" style="margin-bottom:5px">Marker Size</div>
+        <div class="legend-size-row">
+          <div class="legend-circle" style="width:12px;height:12px"></div>
+          <div class="legend-circle" style="width:20px;height:20px"></div>
+          <div class="legend-circle" style="width:28px;height:28px"></div>
+          <span style="font-size:10px;color:var(--text-muted)">= Score</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Detail Panel (slides in from right) ──────────────── -->
+<div id="detail-panel">
+  <div class="panel-header">
+    <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">City Detail</span>
+    <button class="panel-close" id="panel-close" title="Close">✕</button>
+  </div>
+
+  <div class="panel-body">
+
+    <!-- Score Hero -->
+    <div class="panel-score-hero">
+      <div class="panel-city-name" id="panel-city-name">—</div>
+      <div class="panel-county" id="panel-county">—</div>
+      <div class="panel-score-number" id="panel-score-number">—</div>
+      <div class="panel-score-label" id="panel-score-label">Opportunity</div>
+      <div class="panel-rank-badge" id="panel-rank">—</div>
+    </div>
+
+    <!-- Tier Badge + Estimated notice -->
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <div id="panel-tier" style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">—</div>
+      <div class="estimated-badge hidden" id="estimated-badge">
+        ⚠️ Some data estimated from county-level sources
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="section-title">Market Context</div>
+    <div class="panel-notes" id="panel-notes">—</div>
+
+    <!-- Score Breakdown -->
+    <div class="section-title">Score Breakdown</div>
+    <div class="score-breakdown" id="score-breakdown"></div>
+
+    <!-- City Metrics -->
+    <div class="section-title">Key Metrics</div>
+    <div class="detail-grid" id="detail-grid"></div>
+
+    <!-- Scoring methodology note -->
+    <div style="padding:10px 12px;background:rgba(15,23,42,0.6);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">
+      <strong style="color:var(--text-secondary)">Scoring methodology:</strong>
+      Composite of 5 weighted criteria (consulting absence 30%, business abundance 25%,
+      city tier 20%, maturity 15%, owner age 10%). All sub-scores normalized 0–100
+      relative to Washington State city dataset. Adjust weights via the ⚖️ button above.
+    </div>
+  </div>
+</div>
+
+<!-- ── Mobile Toggle Button ──────────────────────────────── -->
+<button id="sidebar-toggle">
+  <span>☰</span> City Rankings
+</button>
+
+<!-- ── Data Sources Modal ────────────────────────────────── -->
+<div class="modal-overlay" id="sources-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📋 Data Sources &amp; Methodology</h3>
+      <button class="panel-close" id="btn-close-sources">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;line-height:1.7">
+        All data is sourced from U.S. federal public APIs or the Washington Secretary of State
+        business registry. Where city-level data was unavailable, county-level data was apportioned
+        by city employment/population share. Data marked <em>estimated</em> in the city detail panel
+        should be refreshed on the schedules below before making investment decisions.
+      </p>
+
+      <table class="source-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Source</th>
+            <th>Update Frequency</th>
+          </tr>
+        </thead>
+        <tbody id="sources-tbody"></tbody>
+      </table>
+
+      <div style="margin-top:20px;padding:12px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);">
+        <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:8px">
+          Live Data API Endpoints for Refresh
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:2;font-family:monospace">
+          Census ACS: https://api.census.gov/data/2023/acs/acs5<br/>
+          County Business Patterns: https://api.census.gov/data/2022/cbp<br/>
+          BLS Business Employment Dynamics: https://www.bls.gov/bdm/<br/>
+          WA Secretary of State: https://ccfs.sos.wa.gov/#/
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:var(--radius-sm);">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-emerald);margin-bottom:6px">
+          SMB Definition (Industry Standard for Exit / M&amp;A Advisory)
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.7">
+          Employee range: 5–249 (excludes micro solo-owner businesses lacking M&A exit value;
+          upper bound targets pre-mid-market segment). Revenue proxy: ~$500K–$50M.
+          Sectors: manufacturing, wholesale, retail, food service, healthcare, professional
+          services, construction, logistics (NAICS 23, 31-33, 42, 44-45, 48-49, 62, 72).
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius-sm);">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">
+          City Tier Classification (WA-Scale Adaptation)
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.7">
+          Tiers derived from equal weighting of population size, median household income,
+          and population growth 2010–2020 (all normalized 0–100 within WA dataset).
+          Composite score → categorical tier assignment. Tier 3 (optimal target zone) is
+          calibrated to 30k–95k population markets with established economic diversity —
+          large enough for consistent SMB pipeline, small enough to be underserved by
+          national and regional consulting competitors.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts (order matters) ──────────────────────────── -->
+<script src="js/data.js"></script>
+<script src="js/scoring.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

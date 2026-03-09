@@ -1,529 +1,581 @@
 /**
- * Washington State Consulting Opportunity Heat Map
- * Main Application Logic
+ * WA Market Intelligence — Main Application
+ * County choropleth (white→red), +/- sliders, interactive map
  */
+
+// ── County FIPS lookup (WA = state 53) ────────────────────
+const COUNTY_FIPS = {
+  'Adams':'53001','Asotin':'53003','Benton':'53005','Chelan':'53007',
+  'Clallam':'53009','Clark':'53011','Columbia':'53013','Cowlitz':'53015',
+  'Douglas':'53017','Ferry':'53019','Franklin':'53021','Garfield':'53023',
+  'Grant':'53025','Grays Harbor':'53027','Island':'53029','Jefferson':'53031',
+  'King':'53033','Kitsap':'53035','Kittitas':'53037','Klickitat':'53039',
+  'Lewis':'53041','Lincoln':'53043','Mason':'53045','Okanogan':'53047',
+  'Pacific':'53049','Pend Oreille':'53051','Pierce':'53053','San Juan':'53055',
+  'Skagit':'53057','Skamania':'53059','Snohomish':'53061','Spokane':'53063',
+  'Stevens':'53065','Thurston':'53067','Wahkiakum':'53069','Walla Walla':'53071',
+  'Whatcom':'53073','Whitman':'53075','Yakima':'53077'
+};
 
 // ── State ──────────────────────────────────────────────────
 const state = {
   map: null,
-  markers: {},           // cityId → Leaflet circleMarker
-  scoredCities: [],      // full scored + ranked dataset
-  filtered: [],          // currently visible subset
-  selectedCity: null,    // active city id
-  weights: { ...DEFAULT_WEIGHTS },
-  tierFilter: 'all',
-  searchQuery: '',
-  weightsOpen: false,
-  sourcesOpen: false
+  countyLayerMap: {},   // fips → leaflet layer
+  cityMarkers: {},      // cityId → leaflet circleMarker
+  countyScores: {},     // fips → { score, city }
+  scoredCities: [],
+  filtered: [],
+  selectedCity: null,
+  selectedFips: null,
+  weights: { ...DEFAULT_WEIGHTS }
 };
 
-// ── Formatters ─────────────────────────────────────────────
+// ── Format helpers ─────────────────────────────────────────
 const fmt = {
-  number: n => n >= 1000000
-    ? (n / 1000000).toFixed(1) + 'M'
-    : n >= 1000
-      ? (n / 1000).toFixed(0) + 'k'
-      : String(n),
-  currency: n => n >= 1000
-    ? '$' + (n / 1000).toFixed(0) + 'k'
-    : '$' + n,
-  pct: n => n.toFixed(1) + '%',
-  score: n => n.toFixed(0)
+  num: n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(0)+'k' : String(n),
+  usd: n => '$' + (n >= 1000 ? (n/1000).toFixed(0)+'k' : n),
+  pct: n => n + '%'
 };
 
-// ── Bootstrap ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  initMap();
-  computeAndRender();
-  bindEvents();
+// ── Color helpers ──────────────────────────────────────────
+// White (#FFF2F2) → Deep Red (#B91C1C) gradient for map
+function scoreToMapColor(score) {
+  const t = Math.max(0, Math.min(1, score / 100));
+  const r = Math.round(255 - 70 * t);
+  const g = Math.round(242 * (1 - t * 0.98));
+  const b = Math.round(242 * (1 - t * 0.98));
+  return `rgb(${r},${g},${b})`;
+}
 
-  // Fade out loading overlay
-  setTimeout(() => {
-    const overlay = document.getElementById('loading-overlay');
-    overlay.classList.add('hidden');
-  }, 600);
-});
+function scoreToMapOpacity(score) {
+  return 0.50 + 0.40 * (score / 100);
+}
 
-// ── Map Initialization ─────────────────────────────────────
+// Sidebar / UI elements use the same red-spectrum for consistency
+function scoreToUIColor(score) {
+  if (score >= 75) return '#B91C1C';
+  if (score >= 60) return '#DC2626';
+  if (score >= 45) return '#F87171';
+  if (score >= 30) return '#FCA5A5';
+  return '#94A3B8';
+}
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ── County score builder ───────────────────────────────────
+// For counties with multiple tracked cities, use the highest scorer
+function buildCountyScores(scoredCities) {
+  const map = {};
+  for (const city of scoredCities) {
+    const primaryCounty = city.county.split('/')[0].trim();
+    const fips = COUNTY_FIPS[primaryCounty];
+    if (!fips) continue;
+    if (!map[fips] || city.opportunityScore > map[fips].score) {
+      map[fips] = { score: city.opportunityScore, city };
+    }
+  }
+  return map;
+}
+
+// ── Map initialization ─────────────────────────────────────
 function initMap() {
   state.map = L.map('map', {
     center: [47.35, -120.5],
     zoom: 7,
-    zoomControl: true,
+    zoomControl: false,
     preferCanvas: true,
     minZoom: 6,
     maxZoom: 13
   });
 
-  // Dark CartoDB tiles
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_matter_only_labels/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19,
-    opacity: 0.5
+  // CartoDB Positron (light, clean — perfect background for white→red choropleth)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd', maxZoom: 19
   }).addTo(state.map);
 
-  // Base dark layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_matter_no_labels/{z}/{x}/{y}{r}.png', {
-    attribution: '',
-    subdomains: 'abcd',
-    maxZoom: 19
+  // City/road labels on a separate pane on top
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+    attribution: '', subdomains: 'abcd', maxZoom: 19, opacity: 0.8
   }).addTo(state.map);
 
-  // WA state outline (approximate bounding box highlight)
-  const waBounds = [[45.54, -124.8], [49.05, -116.9]];
-  L.rectangle(waBounds, {
-    color: 'rgba(59,130,246,0.3)',
-    weight: 1.5,
-    fill: false,
-    dashArray: '6 4'
-  }).addTo(state.map);
-
-  state.map.zoomControl.setPosition('bottomright');
+  L.control.zoom({ position: 'bottomright' }).addTo(state.map);
 }
 
-// ── Compute + Render Pipeline ──────────────────────────────
-function computeAndRender() {
-  state.scoredCities = scoreAllCities(CITY_DATA, state.weights);
-  applyFilters();
-  renderSidebar();
-  renderMarkers();
-  updateHeaderStats();
+// ── Load WA county polygons (US Atlas TopoJSON via CDN) ────
+async function loadCounties() {
+  const res = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json');
+  const us = await res.json();
+
+  // Filter to Washington state (FIPS prefix "53")
+  const all = topojson.feature(us, us.objects.counties);
+  const waCounties = {
+    type: 'FeatureCollection',
+    features: all.features.filter(f => String(f.id).padStart(5,'0').startsWith('53'))
+  };
+
+  L.geoJSON(waCounties, {
+    style: feature => countyStyle(String(feature.id).padStart(5,'0'), false),
+    onEachFeature: (feature, layer) => {
+      const fips = String(feature.id).padStart(5,'0');
+      state.countyLayerMap[fips] = layer;
+      layer.on({
+        mouseover: e => countyHover(e, fips),
+        mouseout:  e => countyOut(e, fips),
+        click:     ()  => countyClick(fips)
+      });
+    }
+  }).addTo(state.map);
 }
 
-function applyFilters() {
-  let cities = state.scoredCities;
-
-  if (state.tierFilter !== 'all') {
-    const tier = parseInt(state.tierFilter);
-    cities = cities.filter(c => c.tier === tier);
+function countyStyle(fips, hovered) {
+  const entry = state.countyScores[fips];
+  if (!entry) {
+    return { fillColor: '#E2E8F0', fillOpacity: 0.45, color: '#CBD5E1', weight: 0.7 };
   }
+  const base = scoreToMapOpacity(entry.score);
+  return {
+    fillColor: scoreToMapColor(entry.score),
+    fillOpacity: hovered ? Math.min(0.95, base + 0.15) : base,
+    color: hovered ? '#475569' : '#94A3B8',
+    weight: hovered ? 2 : 0.8
+  };
+}
 
-  if (state.searchQuery) {
-    const q = state.searchQuery.toLowerCase();
-    cities = cities.filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.county.toLowerCase().includes(q)
-    );
+function countyHover(e, fips) {
+  e.target.setStyle(countyStyle(fips, true));
+  e.target.bringToFront();
+  const entry = state.countyScores[fips];
+  if (entry) showTooltip(e.originalEvent, entry.city.name, entry.score, entry.city.tier);
+}
+
+function countyOut(e, fips) {
+  if (state.selectedFips === fips) {
+    e.target.setStyle({ ...countyStyle(fips, false), color: '#B91C1C', weight: 2.5 });
+  } else {
+    e.target.setStyle(countyStyle(fips, false));
   }
-
-  state.filtered = cities;
+  hideTooltip();
 }
 
-// ── Header Stats ───────────────────────────────────────────
-function updateHeaderStats() {
-  const tier3 = state.scoredCities.filter(c => c.tier === 3);
-  const topCity = state.scoredCities[0];
-
-  document.getElementById('stat-cities').textContent = state.scoredCities.length;
-  document.getElementById('stat-targets').textContent = tier3.length;
-  document.getElementById('stat-top-city').textContent = topCity ? topCity.name : '—';
-  document.getElementById('stat-top-score').textContent = topCity ? fmt.score(topCity.opportunityScore) : '—';
+function countyClick(fips) {
+  const entry = state.countyScores[fips];
+  if (entry) selectCity(entry.city.id);
 }
 
-// ── Sidebar Rendering ──────────────────────────────────────
-function renderSidebar() {
-  const list = document.getElementById('city-list');
-  const countEl = document.getElementById('list-count');
-
-  countEl.textContent = `${state.filtered.length} cities`;
-
-  list.innerHTML = state.filtered.map((city, idx) => {
-    const color = getScoreColor(city.opportunityScore);
-    const isActive = state.selectedCity === city.id;
-    const isTop = city.rank <= 5;
-
-    return `
-      <div class="city-list-item ${isActive ? 'active' : ''}"
-           data-city-id="${city.id}"
-           onclick="selectCity('${city.id}')">
-        <div class="city-rank ${isTop ? 'city-rank-top' : ''}">#${city.rank}</div>
-        <div class="city-score-ring" style="border-color:${color}; color:${color}; background: ${hexToRgba(color, 0.08)}">
-          ${fmt.score(city.opportunityScore)}
-        </div>
-        <div class="city-info">
-          <div class="city-name">${city.name}</div>
-          <div class="city-meta">
-            <span class="city-meta-tag">${fmt.number(city.population)} pop</span>
-            <span class="city-meta-tag">·</span>
-            <span class="city-meta-tag">${fmt.currency(city.medianHouseholdIncome)} MHI</span>
-          </div>
-        </div>
-        <div class="tier-badge" style="background:${getTierColor(city.tier)}">T${city.tier}</div>
-      </div>`;
-  }).join('');
+function updateCountyColors() {
+  state.countyScores = buildCountyScores(state.scoredCities);
+  for (const [fips, layer] of Object.entries(state.countyLayerMap)) {
+    if (state.selectedFips === fips) {
+      layer.setStyle({ ...countyStyle(fips, false), color: '#B91C1C', weight: 2.5 });
+    } else {
+      layer.setStyle(countyStyle(fips, false));
+    }
+  }
 }
 
-// ── Map Markers ────────────────────────────────────────────
-function renderMarkers() {
-  // Clear old markers
-  Object.values(state.markers).forEach(m => m.remove());
-  state.markers = {};
-
-  const maxScore = Math.max(...state.scoredCities.map(c => c.opportunityScore));
-  const minRadius = 6;
-  const maxRadius = 28;
+// ── City dot markers ───────────────────────────────────────
+function renderCityMarkers() {
+  Object.values(state.cityMarkers).forEach(m => m.remove());
+  state.cityMarkers = {};
 
   state.scoredCities.forEach(city => {
-    const color = getScoreColor(city.opportunityScore);
-    const isFiltered = state.filtered.some(c => c.id === city.id);
-    const radius = minRadius + ((city.opportunityScore / maxScore) * (maxRadius - minRadius));
-
-    const marker = L.circleMarker([city.lat, city.lng], {
-      radius: radius,
-      fillColor: color,
-      color: isFiltered ? color : 'rgba(255,255,255,0.1)',
-      weight: isFiltered ? 2 : 1,
-      fillOpacity: isFiltered ? 0.78 : 0.18,
-      opacity: isFiltered ? 1 : 0.3
+    const visible = state.filtered.some(c => c.id === city.id);
+    const m = L.circleMarker([city.lat, city.lng], {
+      radius: 4.5,
+      fillColor: '#FFFFFF',
+      color: visible ? '#334155' : '#94A3B8',
+      weight: 1.5,
+      fillOpacity: visible ? 0.95 : 0.3,
+      opacity: visible ? 1 : 0.3
     }).addTo(state.map);
 
-    marker.on('click', () => selectCity(city.id));
-    marker.on('mouseover', (e) => showMapTooltip(city, e));
-    marker.on('mouseout', hideMapTooltip);
-
-    state.markers[city.id] = marker;
+    m.on('click', () => selectCity(city.id));
+    m.on('mouseover', e => showTooltip(e.originalEvent, city.name, city.opportunityScore, city.tier));
+    m.on('mouseout', hideTooltip);
+    state.cityMarkers[city.id] = m;
   });
 }
 
 function updateMarkerStyles() {
-  const maxScore = Math.max(...state.scoredCities.map(c => c.opportunityScore));
-  const minRadius = 6;
-  const maxRadius = 28;
-
   state.scoredCities.forEach(city => {
-    const marker = state.markers[city.id];
-    if (!marker) return;
-
-    const color = getScoreColor(city.opportunityScore);
-    const isFiltered = state.filtered.some(c => c.id === city.id);
-    const isSelected = city.id === state.selectedCity;
-    const radius = minRadius + ((city.opportunityScore / maxScore) * (maxRadius - minRadius));
-
-    marker.setStyle({
-      radius: isSelected ? radius * 1.25 : radius,
-      fillColor: color,
-      color: isSelected ? '#fff' : (isFiltered ? color : 'rgba(255,255,255,0.1)'),
-      weight: isSelected ? 3 : (isFiltered ? 2 : 1),
-      fillOpacity: isFiltered ? 0.78 : 0.18,
-      opacity: isFiltered ? 1 : 0.3
+    const m = state.cityMarkers[city.id];
+    if (!m) return;
+    const visible = state.filtered.some(c => c.id === city.id);
+    const selected = city.id === state.selectedCity;
+    m.setStyle({
+      radius: selected ? 8 : 4.5,
+      fillColor: selected ? '#B91C1C' : '#FFFFFF',
+      color: selected ? '#FFFFFF' : (visible ? '#334155' : '#94A3B8'),
+      weight: selected ? 2.5 : 1.5,
+      fillOpacity: visible ? 0.95 : 0.3,
+      opacity: visible ? 1 : 0.3
     });
-
-    if (isSelected) marker.bringToFront();
+    if (selected) m.bringToFront();
   });
 }
 
-// ── Map Tooltip ────────────────────────────────────────────
-let tooltipEl = null;
+// ── Tooltip ────────────────────────────────────────────────
+let _tip = null;
 
-function showMapTooltip(city, e) {
-  hideMapTooltip();
-  tooltipEl = document.createElement('div');
-  tooltipEl.className = 'tooltip';
-  tooltipEl.innerHTML = `
-    <strong>${city.name}</strong> — Score: ${fmt.score(city.opportunityScore)} &nbsp;
-    <span style="color:${getTierColor(city.tier)}">Tier ${city.tier}</span>
-  `;
-  document.body.appendChild(tooltipEl);
-  moveTooltip(e.originalEvent);
-
-  state.map.on('mousemove', (ev) => {
-    if (tooltipEl) moveTooltip(ev.originalEvent);
-  });
+function showTooltip(e, name, score, tier) {
+  hideTooltip();
+  _tip = document.createElement('div');
+  _tip.className = 'map-tooltip';
+  const fill = scoreToMapColor(score);
+  const dark = score > 55;
+  _tip.innerHTML = `
+    <div class="tip-name">${name}</div>
+    <div class="tip-meta">
+      <span class="tip-score" style="background:${fill};color:${dark?'#fff':'#111'}">${score.toFixed(0)}</span>
+      <span class="tip-tier" style="color:${getTierColor(tier)}">T${tier}</span>
+    </div>`;
+  document.body.appendChild(_tip);
+  positionTip(e);
+  state.map.on('mousemove', ev => { if (_tip) positionTip(ev.originalEvent); });
 }
 
-function moveTooltip(e) {
-  if (!tooltipEl) return;
-  tooltipEl.style.left = (e.clientX + 14) + 'px';
-  tooltipEl.style.top  = (e.clientY - 10) + 'px';
+function positionTip(e) {
+  if (!_tip) return;
+  _tip.style.left = (e.clientX + 16) + 'px';
+  _tip.style.top  = (e.clientY - 10) + 'px';
 }
 
-function hideMapTooltip() {
-  if (tooltipEl) {
-    tooltipEl.remove();
-    tooltipEl = null;
-  }
+function hideTooltip() {
+  if (_tip) { _tip.remove(); _tip = null; }
 }
 
-// ── City Selection ─────────────────────────────────────────
+// ── City selection ─────────────────────────────────────────
 function selectCity(cityId) {
+  const prevFips = state.selectedFips;
   state.selectedCity = cityId;
   const city = state.scoredCities.find(c => c.id === cityId);
   if (!city) return;
 
-  // Update sidebar highlight
-  document.querySelectorAll('.city-list-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.cityId === cityId);
-  });
+  // Find county
+  const fips = COUNTY_FIPS[city.county.split('/')[0].trim()] || null;
+  state.selectedFips = fips;
 
-  // Pan map
+  // Reset previous county border
+  if (prevFips && state.countyLayerMap[prevFips]) {
+    state.countyLayerMap[prevFips].setStyle(countyStyle(prevFips, false));
+  }
+  // Highlight new county
+  if (fips && state.countyLayerMap[fips]) {
+    state.countyLayerMap[fips].setStyle({
+      ...countyStyle(fips, false), color: '#B91C1C', weight: 2.5
+    });
+    state.countyLayerMap[fips].bringToFront();
+  }
+
+  document.querySelectorAll('.city-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.id === cityId));
+
   state.map.flyTo([city.lat, city.lng], Math.max(state.map.getZoom(), 9), {
-    animate: true, duration: 0.8
+    animate: true, duration: 0.7
   });
 
-  // Update marker styles
   updateMarkerStyles();
-
-  // Open detail panel
   openDetailPanel(city);
+
+  // Close mobile sidebar
+  if (window.innerWidth < 768) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+  }
 }
 
-// ── Detail Panel ───────────────────────────────────────────
+// ── Detail panel ───────────────────────────────────────────
 function openDetailPanel(city) {
-  const panel = document.getElementById('detail-panel');
-  panel.classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+  const score  = city.opportunityScore;
+  const uiCol  = scoreToUIColor(score);
+  const mapCol = scoreToMapColor(score);
+  const tCol   = getTierColor(city.tier);
 
-  const color = getScoreColor(city.opportunityScore);
-  const label = getOpportunityLabel(city.opportunityScore);
-  const tierLabel = getTierLabel(city.tier);
-  const tierColor = getTierColor(city.tier);
+  document.getElementById('p-name').textContent    = city.name;
+  document.getElementById('p-county').textContent  = city.county + ' County';
+  document.getElementById('p-rank').textContent    = `#${city.rank} of ${state.scoredCities.length} cities`;
 
-  document.getElementById('panel-city-name').textContent = city.name;
-  document.getElementById('panel-county').textContent = `${city.county} County`;
+  const scoreEl = document.getElementById('p-score');
+  scoreEl.textContent  = score.toFixed(0);
+  scoreEl.style.color  = uiCol;
 
-  const scoreEl = document.getElementById('panel-score-number');
-  scoreEl.textContent = fmt.score(city.opportunityScore);
-  scoreEl.style.color = color;
+  const labelEl = document.getElementById('p-label');
+  labelEl.textContent  = getOpportunityLabel(score) + ' Opportunity';
+  labelEl.style.color  = uiCol;
 
-  const labelEl = document.getElementById('panel-score-label');
-  labelEl.textContent = label + ' Opportunity';
-  labelEl.style.color = color;
+  const tierEl = document.getElementById('p-tier');
+  tierEl.textContent = getTierLabel(city.tier);
+  Object.assign(tierEl.style, {
+    background: hexToRgba(tCol, 0.12),
+    color: tCol,
+    border: `1px solid ${hexToRgba(tCol, 0.35)}`
+  });
 
-  document.getElementById('panel-rank').textContent = `Ranked #${city.rank} of ${state.scoredCities.length} cities`;
-
-  // Tier badge
-  const tierEl = document.getElementById('panel-tier');
-  tierEl.textContent = tierLabel;
-  tierEl.style.background = hexToRgba(tierColor, 0.15);
-  tierEl.style.color = tierColor;
-  tierEl.style.border = `1px solid ${hexToRgba(tierColor, 0.4)}`;
+  document.getElementById('p-estimated').classList.toggle('hidden', !city.estimated);
+  document.getElementById('p-notes').textContent = city.notes;
 
   // Score breakdown bars
   const breakdown = [
-    { key: 'consultingAbsence', label: 'Consulting Firm Absence', weight: state.weights.consultingAbsence },
-    { key: 'businessAbundance', label: 'Target Business Abundance', weight: state.weights.businessAbundance },
-    { key: 'cityTier',          label: 'City Tier Classification', weight: state.weights.cityTier },
-    { key: 'businessMaturity',  label: 'Business Maturity (3+ yr)', weight: state.weights.businessMaturity },
-    { key: 'ownerDemographics', label: 'Owner Demographics (55+)', weight: state.weights.ownerDemographics }
+    { key: 'consultingAbsence', label: 'Consulting Absence',   weight: state.weights.consultingAbsence },
+    { key: 'businessAbundance', label: 'Business Abundance',   weight: state.weights.businessAbundance },
+    { key: 'cityTier',          label: 'City Tier',            weight: state.weights.cityTier },
+    { key: 'businessMaturity',  label: 'Business Maturity',    weight: state.weights.businessMaturity },
+    { key: 'ownerDemographics', label: 'Owner Demographics',   weight: state.weights.ownerDemographics }
   ];
 
-  const breakdownEl = document.getElementById('score-breakdown');
-  breakdownEl.innerHTML = breakdown.map(item => {
-    const score = city.scores[item.key];
-    const barColor = getScoreColor(score);
+  document.getElementById('p-breakdown').innerHTML = breakdown.map(b => {
+    const s = city.scores[b.key];
     return `
-      <div class="score-row">
-        <div class="score-row-header">
-          <span class="score-row-label">${item.label}</span>
-          <div class="score-row-right">
-            <span class="score-row-value" style="color:${barColor}">${fmt.score(score)}</span>
-            <span class="score-row-weight">${Math.round(item.weight * 100)}%</span>
+      <div class="br-row">
+        <div class="br-header">
+          <span class="br-label">${b.label}</span>
+          <div class="br-right">
+            <span class="br-score" style="color:${scoreToUIColor(s)}">${s.toFixed(0)}</span>
+            <span class="br-weight">${Math.round(b.weight*100)}%</span>
           </div>
         </div>
-        <div class="score-bar-track">
-          <div class="score-bar-fill" style="width:${score}%; background:${barColor}"></div>
+        <div class="br-track">
+          <div class="br-fill" style="width:${s}%;background:${scoreToMapColor(s)}"></div>
         </div>
       </div>`;
   }).join('');
 
-  // Detail cards
+  // Metrics grid
   const smbDensity = ((city.smbCount / city.population) * 1000).toFixed(1);
-  const cards = [
-    { value: fmt.number(city.population),         label: 'Population',             source: '2020 Census' },
-    { value: fmt.currency(city.medianHouseholdIncome), label: 'Median HH Income',  source: 'ACS 2021' },
-    { value: city.consultingFirmCount,             label: 'Consulting Firms',       source: 'CBP 2021 est.' },
-    { value: fmt.number(city.smbCount),            label: 'SMBs (5-249 emp)',        source: 'CBP 2021 est.' },
-    { value: smbDensity + '/1k',                   label: 'SMB Density',            source: 'Derived' },
-    { value: city.businessMaturityPct + '%',       label: 'Businesses 3+ Yrs',      source: 'BLS BED est.' },
-    { value: city.ownerAge55PlusPct + '%',         label: 'Population 55+',         source: 'ACS 2021' },
-    { value: '+' + city.populationGrowthPct + '%', label: 'Pop. Growth 2010–20',    source: '2020 Census' }
-  ];
-
-  document.getElementById('detail-grid').innerHTML = cards.map(c => `
-    <div class="detail-card">
-      <div class="detail-card-value">${c.value}</div>
-      <div class="detail-card-label">${c.label}</div>
-      <div class="detail-card-source">${c.source}</div>
+  document.getElementById('p-metrics').innerHTML = [
+    { v: fmt.num(city.population),                  l: 'Population',         s: '2020 Census'  },
+    { v: fmt.usd(city.medianHouseholdIncome),        l: 'Median HH Income',   s: 'ACS 2021'     },
+    { v: city.consultingFirmCount,                   l: 'Consulting Firms',   s: 'CBP est.'     },
+    { v: fmt.num(city.smbCount),                     l: 'SMBs (5–249 emp)',   s: 'CBP est.'     },
+    { v: smbDensity + '/1k',                         l: 'SMB Density',        s: 'Derived'      },
+    { v: city.businessMaturityPct + '%',             l: 'Businesses 3+ Yrs',  s: 'BLS est.'     },
+    { v: city.ownerAge55PlusPct + '%',               l: 'Population 55+',     s: 'ACS 2021'     },
+    { v: '+' + city.populationGrowthPct + '%',       l: 'Pop. Growth 10–20',  s: 'Census'       }
+  ].map(m => `
+    <div class="metric-card">
+      <div class="metric-value">${m.v}</div>
+      <div class="metric-label">${m.l}</div>
+      <div class="metric-source">${m.s}</div>
     </div>`).join('');
-
-  // Notes
-  document.getElementById('panel-notes').textContent = city.notes;
-
-  // Estimated badge
-  document.getElementById('estimated-badge').classList.toggle('hidden', !city.estimated);
 }
 
 function closeDetailPanel() {
   document.getElementById('detail-panel').classList.remove('open');
   state.selectedCity = null;
-  document.querySelectorAll('.city-list-item').forEach(el => el.classList.remove('active'));
+  if (state.selectedFips && state.countyLayerMap[state.selectedFips]) {
+    state.countyLayerMap[state.selectedFips].setStyle(countyStyle(state.selectedFips, false));
+  }
+  state.selectedFips = null;
+  document.querySelectorAll('.city-item').forEach(el => el.classList.remove('active'));
   updateMarkerStyles();
 }
 
-// ── Weights Panel ──────────────────────────────────────────
-function toggleWeights() {
-  state.weightsOpen = !state.weightsOpen;
-  document.getElementById('weights-panel').classList.toggle('open', state.weightsOpen);
-  document.getElementById('btn-weights').classList.toggle('active', state.weightsOpen);
+// ── Sidebar rendering ──────────────────────────────────────
+function applyFilters() {
+  let list = state.scoredCities;
+  const tier = document.querySelector('.tier-pill.active')?.dataset.tier;
+  const q = (document.getElementById('city-search').value || '').trim().toLowerCase();
+  if (tier && tier !== 'all') list = list.filter(c => c.tier === parseInt(tier));
+  if (q) list = list.filter(c => c.name.toLowerCase().includes(q) || c.county.toLowerCase().includes(q));
+  state.filtered = list;
 }
 
-function initWeightSliders() {
-  const keys = Object.keys(DEFAULT_WEIGHTS);
-  keys.forEach(key => {
-    const slider = document.getElementById(`w-${key}`);
-    const display = document.getElementById(`wv-${key}`);
-    if (!slider) return;
+function renderSidebar() {
+  applyFilters();
+  document.getElementById('list-count').textContent = state.filtered.length + ' cities';
 
-    slider.value = Math.round(state.weights[key] * 100);
-    display.textContent = Math.round(state.weights[key] * 100) + '%';
+  document.getElementById('city-list').innerHTML = state.filtered.map(city => {
+    const score    = city.opportunityScore;
+    const mapColor = scoreToMapColor(score);
+    const uiColor  = scoreToUIColor(score);
+    const tColor   = getTierColor(city.tier);
+    const active   = state.selectedCity === city.id;
+    return `
+      <div class="city-item${active ? ' active' : ''}" data-id="${city.id}" onclick="selectCity('${city.id}')">
+        <div class="city-rank${city.rank <= 5 ? ' top' : ''}">${city.rank}</div>
+        <div class="city-swatch" style="background:${mapColor}"></div>
+        <div class="city-info">
+          <div class="city-name">${city.name}</div>
+          <div class="city-sub">${fmt.num(city.population)} · ${fmt.usd(city.medianHouseholdIncome)}</div>
+        </div>
+        <div class="city-badge" style="color:${uiColor};border-color:${uiColor}">${score.toFixed(0)}</div>
+        <div class="city-tier-dot" style="background:${tColor}" title="${getTierLabel(city.tier)}"></div>
+      </div>`;
+  }).join('');
 
-    slider.addEventListener('input', () => {
-      state.weights[key] = parseInt(slider.value) / 100;
-      display.textContent = slider.value + '%';
-      updateWeightTotal();
-    });
-  });
-  updateWeightTotal();
+  updateMarkerStyles();
 }
 
-function updateWeightTotal() {
-  const total = Object.values(state.weights).reduce((a, b) => a + b, 0);
-  const totalEl = document.getElementById('weight-total');
-  const pct = Math.round(total * 100);
-  totalEl.textContent = `Total: ${pct}%`;
-  const valid = Math.abs(pct - 100) <= 1;
-  totalEl.className = 'weight-total ' + (valid ? 'valid' : 'invalid');
-  document.getElementById('btn-apply-weights').disabled = !valid;
+function updateHeaderStats() {
+  const top = state.scoredCities[0];
+  const t3  = state.scoredCities.filter(c => c.tier === 3).length;
+  document.getElementById('s-total').textContent = state.scoredCities.length;
+  document.getElementById('s-tier3').textContent = t3;
+  document.getElementById('s-top').textContent   = top?.name || '—';
+  document.getElementById('s-score').textContent = top ? top.opportunityScore.toFixed(0) : '—';
+  document.getElementById('s-score').style.color = top ? scoreToUIColor(top.opportunityScore) : '';
 }
 
-function applyWeights() {
-  computeAndRender();
-  // Re-open detail panel if city is selected
+// ── Compute + render pipeline ──────────────────────────────
+function computeAndRender() {
+  state.scoredCities = scoreAllCities(CITY_DATA, state.weights);
+  state.countyScores = buildCountyScores(state.scoredCities);
+  renderSidebar();
+  updateCountyColors();
+  updateHeaderStats();
   if (state.selectedCity) {
     const city = state.scoredCities.find(c => c.id === state.selectedCity);
     if (city) openDetailPanel(city);
   }
 }
 
+// ── Sliders (+/- buttons + range) ─────────────────────────
+function initSliders() {
+  Object.keys(DEFAULT_WEIGHTS).forEach(key => {
+    const slider  = document.getElementById(`w-${key}`);
+    const display = document.getElementById(`wv-${key}`);
+    if (!slider) return;
+
+    slider.value = Math.round(state.weights[key] * 100);
+    setSliderFill(slider);
+    display.textContent = slider.value + '%';
+
+    slider.addEventListener('input', () => {
+      state.weights[key] = parseInt(slider.value) / 100;
+      display.textContent = slider.value + '%';
+      setSliderFill(slider);
+      checkWeightTotal();
+    });
+  });
+
+  // +/- buttons
+  document.querySelectorAll('.w-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key     = btn.dataset.key;
+      const delta   = parseInt(btn.dataset.delta);
+      const slider  = document.getElementById(`w-${key}`);
+      const display = document.getElementById(`wv-${key}`);
+      const newVal  = Math.min(parseInt(slider.max), Math.max(parseInt(slider.min), parseInt(slider.value) + delta));
+      slider.value              = newVal;
+      state.weights[key]        = newVal / 100;
+      display.textContent       = newVal + '%';
+      setSliderFill(slider);
+      checkWeightTotal();
+    });
+  });
+
+  checkWeightTotal();
+}
+
+function setSliderFill(slider) {
+  const pct = ((parseInt(slider.value) - parseInt(slider.min)) /
+               (parseInt(slider.max)  - parseInt(slider.min))) * 100;
+  slider.style.background = `linear-gradient(to right,#DC2626 ${pct}%,#374151 ${pct}%)`;
+}
+
+function checkWeightTotal() {
+  const total = Object.values(state.weights).reduce((a, b) => a + b, 0);
+  const pct   = Math.round(total * 100);
+  const el    = document.getElementById('weight-total');
+  const valid = Math.abs(pct - 100) <= 1;
+  el.textContent = `Total: ${pct}%`;
+  el.className   = 'weight-total ' + (valid ? 'valid' : 'invalid');
+  document.getElementById('btn-apply-weights').disabled = !valid;
+}
+
 function resetWeights() {
   state.weights = { ...DEFAULT_WEIGHTS };
-  initWeightSliders();
-  computeAndRender();
+  initSliders();
 }
 
-// ── Data Sources Modal ─────────────────────────────────────
-function openSources() {
-  document.getElementById('sources-modal').classList.add('open');
-}
-
-function closeSources() {
-  document.getElementById('sources-modal').classList.remove('open');
-}
-
+// ── Sources table ──────────────────────────────────────────
 function renderSourcesTable() {
-  const tbody = document.getElementById('sources-tbody');
-  tbody.innerHTML = DATA_METADATA.sources.map(s => `
+  document.getElementById('sources-tbody').innerHTML = DATA_METADATA.sources.map(s => `
     <tr>
-      <td class="source-metric">${s.metric}</td>
+      <td class="src-metric">${s.metric}</td>
       <td>${s.source}</td>
       <td><span class="update-freq">${s.updateFrequency}</span></td>
     </tr>`).join('');
 }
 
-// ── Search & Filter ────────────────────────────────────────
-function handleSearch(e) {
-  state.searchQuery = e.target.value.trim();
-  applyFilters();
-  renderSidebar();
-  updateMarkerStyles();
-}
-
-function handleTierFilter(tier) {
-  state.tierFilter = tier;
-  document.querySelectorAll('.tier-pill').forEach(p =>
-    p.classList.toggle('active', p.dataset.tier === tier));
-  applyFilters();
-  renderSidebar();
-  updateMarkerStyles();
-}
-
-// ── Map View Controls ──────────────────────────────────────
-function resetMapView() {
-  state.map.flyTo([47.35, -120.5], 7, { animate: true, duration: 0.8 });
-}
-
-function zoomIn()  { state.map.zoomIn(); }
-function zoomOut() { state.map.zoomOut(); }
-
-// ── Mobile Sidebar ─────────────────────────────────────────
-function toggleMobileSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const btn = document.getElementById('sidebar-toggle');
-  const isOpen = sidebar.classList.toggle('mobile-open');
-  btn.innerHTML = isOpen
-    ? '<span>✕</span> Close List'
-    : '<span>☰</span> City Rankings';
-}
-
-// ── Event Binding ──────────────────────────────────────────
+// ── Event binding ──────────────────────────────────────────
 function bindEvents() {
-  // Search
-  document.getElementById('city-search').addEventListener('input', handleSearch);
+  document.getElementById('city-search').addEventListener('input', renderSidebar);
 
-  // Tier pills
-  document.querySelectorAll('.tier-pill').forEach(pill =>
-    pill.addEventListener('click', () => handleTierFilter(pill.dataset.tier)));
+  document.querySelectorAll('.tier-pill').forEach(p =>
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.tier-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      renderSidebar();
+    }));
 
-  // Panel close
   document.getElementById('panel-close').addEventListener('click', closeDetailPanel);
 
-  // Weights
-  document.getElementById('btn-weights').addEventListener('click', toggleWeights);
-  document.getElementById('btn-apply-weights').addEventListener('click', () => {
-    applyWeights();
-    toggleWeights();
+  // Weights toggle
+  const wBtn   = document.getElementById('btn-weights');
+  const wPanel = document.getElementById('weights-panel');
+  wBtn.addEventListener('click', () => {
+    wPanel.classList.toggle('open');
+    wBtn.classList.toggle('active');
   });
-  document.getElementById('btn-reset-weights').addEventListener('click', resetWeights);
+  document.addEventListener('click', e => {
+    if (wPanel.classList.contains('open') && !wPanel.contains(e.target) && !wBtn.contains(e.target)) {
+      wPanel.classList.remove('open');
+      wBtn.classList.remove('active');
+    }
+  });
+
+  document.getElementById('btn-apply-weights').addEventListener('click', () => {
+    computeAndRender();
+    wPanel.classList.remove('open');
+    wBtn.classList.remove('active');
+  });
+  document.getElementById('btn-reset-weights').addEventListener('click', () => {
+    resetWeights();
+    computeAndRender();
+  });
 
   // Sources modal
-  document.getElementById('btn-sources').addEventListener('click', openSources);
-  document.getElementById('btn-close-sources').addEventListener('click', closeSources);
+  document.getElementById('btn-sources').addEventListener('click', () =>
+    document.getElementById('sources-modal').classList.add('open'));
+  document.getElementById('btn-close-sources').addEventListener('click', () =>
+    document.getElementById('sources-modal').classList.remove('open'));
   document.getElementById('sources-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeSources();
+    if (e.target === e.currentTarget) document.getElementById('sources-modal').classList.remove('open');
   });
 
-  // Map controls
-  document.getElementById('btn-reset-view').addEventListener('click', resetMapView);
+  // Reset map
+  document.getElementById('btn-reset-view').addEventListener('click', () =>
+    state.map.flyTo([47.35, -120.5], 7, { animate: true, duration: 0.8 }));
 
-  // Mobile
-  document.getElementById('sidebar-toggle').addEventListener('click', toggleMobileSidebar);
+  // Mobile sidebar
+  document.getElementById('sidebar-toggle').addEventListener('click', () =>
+    document.getElementById('sidebar').classList.toggle('mobile-open'));
+}
 
-  // Close weights panel on outside click
-  document.addEventListener('click', e => {
-    const panel = document.getElementById('weights-panel');
-    const btn = document.getElementById('btn-weights');
-    if (state.weightsOpen && !panel.contains(e.target) && !btn.contains(e.target)) {
-      toggleWeights();
-    }
-  });
+// ── Bootstrap ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  initMap();
 
-  // Close sidebar on mobile when city selected
-  document.getElementById('city-list').addEventListener('click', () => {
-    if (window.innerWidth < 768) {
-      document.getElementById('sidebar').classList.remove('mobile-open');
-      document.getElementById('sidebar-toggle').innerHTML = '<span>☰</span> City Rankings';
-    }
-  });
+  try {
+    await loadCounties();
+  } catch (err) {
+    console.warn('County GeoJSON failed, continuing without regions:', err);
+  }
 
-  // Init sliders
-  initWeightSliders();
+  computeAndRender();
+  renderCityMarkers();
+  bindEvents();
+  initSliders();
   renderSourcesTable();
-}
 
-// ── Utility ────────────────────────────────────────────────
-function hexToRgba(hex, alpha) {
-  const r = parseInt(hex.slice(1,3), 16);
-  const g = parseInt(hex.slice(3,5), 16);
-  const b = parseInt(hex.slice(5,7), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
+  setTimeout(() => {
+    document.getElementById('loading-overlay').classList.add('hidden');
+  }, 900);
+});

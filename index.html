@@ -11,12 +11,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <!-- TopoJSON (for county boundary rendering) -->
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+
+  <!-- deck.gl -->
+  <script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
 
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -180,12 +179,22 @@
     <!-- Legend -->
     <div id="legend">
       <div class="legend-title">Opportunity Score</div>
-      <div class="legend-gradient"></div>
-      <div class="legend-labels">
-        <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+      <div class="legend-spike-demo">
+        <div class="lsd-col">
+          <div class="lsd-bar high"></div>
+          <span class="lsd-label">High</span>
+        </div>
+        <div class="lsd-col">
+          <div class="lsd-bar mid"></div>
+          <span class="lsd-label">Med</span>
+        </div>
+        <div class="lsd-col">
+          <div class="lsd-bar low"></div>
+          <span class="lsd-label">Low</span>
+        </div>
       </div>
       <div class="legend-notes">
-        <span style="color:#94A3B8">■</span> No tracked city
+        Taller + redder = more opportunity
       </div>
       <div class="legend-divider"></div>
       <div class="legend-tiers">

@@ -225,6 +225,7 @@ function toggleRotation() {
 }
 
 function animateRotation() {
+  if (!state.deckgl) return;
   state.viewState = { ...state.viewState, bearing: ((state.viewState.bearing || 0) + 0.25) % 360 };
   state.deckgl.setProps({ viewState: state.viewState });
   _rotateRAF = requestAnimationFrame(animateRotation);

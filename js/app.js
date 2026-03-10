@@ -43,8 +43,8 @@ const fmt = {
 function scoreToMapColor(score) {
   const t = Math.max(0, Math.min(1, score / 100));
   const r = Math.round(255 - 70 * t);
-  const g = Math.round(242 * (1 - t * 0.98));
-  const b = Math.round(242 * (1 - t * 0.98));
+  const g = Math.round(242 * (1 - t * 0.88));
+  const b = Math.round(242 * (1 - t * 0.88));
   return `rgb(${r},${g},${b})`;
 }
 
@@ -83,7 +83,10 @@ function initMap() {
     controller: true,
     parameters: { clearColor: [0, 0, 0, 1] },
     effects: [lightingEffect],
-    onViewStateChange: ({ viewState }) => { state.viewState = viewState; },
+    onViewStateChange: ({ viewState }) => {
+      state.viewState = viewState;
+      state.deckgl.setProps({ viewState });
+    },
     getCursor: ({ isDragging }) => isDragging ? 'grabbing' : 'default',
     layers: []
   });
@@ -222,7 +225,7 @@ function selectCity(cityId) {
   if (!city) return;
 
   state.deckgl.setProps({
-    initialViewState: {
+    viewState: {
       longitude: city.lng,
       latitude: city.lat,
       zoom: Math.max((state.viewState && state.viewState.zoom) || 6, 8.5),
@@ -249,7 +252,6 @@ function openDetailPanel(city) {
   document.getElementById('detail-panel').classList.add('open');
   const score  = city.opportunityScore;
   const uiCol  = scoreToUIColor(score);
-  const mapCol = scoreToMapColor(score);
   const tCol   = getTierColor(city.tier);
 
   document.getElementById('p-name').textContent    = city.name;
@@ -507,7 +509,7 @@ function bindEvents() {
   // Reset map view
   document.getElementById('btn-reset-view').addEventListener('click', () => {
     state.deckgl.setProps({
-      initialViewState: {
+      viewState: {
         longitude: -120.5, latitude: 47.35, zoom: 6.0, pitch: 50, bearing: -15,
         transitionDuration: 1000,
         transitionInterpolator: new deck.FlyToInterpolator()

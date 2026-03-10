@@ -26,7 +26,7 @@ const state = {
   filtered: [],
   selectedCity: null,
   weights: { ...DEFAULT_WEIGHTS },
-  viewState: { longitude: -120.8, latitude: 47.1, zoom: 6.5, pitch: 55, bearing: -10 },
+  viewState: { longitude: -120.5, latitude: 47.0, zoom: 5.9, pitch: 55, bearing: -10 },
   _mouseX: 0,
   _mouseY: 0
 };
@@ -39,12 +39,29 @@ const fmt = {
 };
 
 // ── Color helpers ──────────────────────────────────────────
-// White (#FFF2F2) → Deep Red (#B91C1C) gradient for map
+// Multi-stop gradient: cool white → yellow → amber → orange-red → deep crimson
+const COLOR_STOPS = [
+  [0.00, [255, 255, 255]],  // pure white       (lowest in dataset)
+  [0.30, [255, 240,  30]],  // vivid yellow
+  [0.60, [255, 110,   0]],  // vivid orange
+  [0.82, [220,  10,   0]],  // bright red
+  [1.00, [120,   0,   0]]   // deep crimson     (highest in dataset)
+];
+
+function lerpColor(t, stops) {
+  const clamped = Math.max(0, Math.min(1, t));
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (clamped <= stops[i + 1][0]) {
+      const f = (clamped - stops[i][0]) / (stops[i + 1][0] - stops[i][0]);
+      return stops[i][1].map((v, j) => Math.round(v + (stops[i + 1][1][j] - v) * f));
+    }
+  }
+  return stops[stops.length - 1][1];
+}
+
+// Sidebar/badge uses absolute 0-100 score
 function scoreToMapColor(score) {
-  const t = Math.max(0, Math.min(1, score / 100));
-  const r = Math.round(255 - 70 * t);
-  const g = Math.round(242 * (1 - t * 0.88));
-  const b = Math.round(242 * (1 - t * 0.88));
+  const [r, g, b] = lerpColor(score / 100, COLOR_STOPS);
   return `rgb(${r},${g},${b})`;
 }
 
@@ -85,7 +102,17 @@ function initMap() {
     effects: [lightingEffect],
     onViewStateChange: ({ viewState }) => {
       // Clamp zoom: can't zoom out beyond initial WA view
-      viewState = { ...viewState, zoom: Math.max(6.5, viewState.zoom) };
+      viewState = { ...viewState, zoom: Math.max(5.9, viewState.zoom) };
+      // Sync rotation slider
+      const rotSlider = document.getElementById('rotation-slider');
+      const rotVal    = document.getElementById('rotation-val');
+      if (rotSlider) {
+        const b = Math.round(((viewState.bearing % 360) + 360) % 360);
+        const mapped = b > 180 ? b - 360 : b;
+        rotSlider.value = mapped;
+        if (rotVal) rotVal.textContent = mapped + '°';
+        setSliderFill(rotSlider);
+      }
       state.viewState = viewState;
       state.deckgl.setProps({ viewState });
     },
@@ -121,6 +148,13 @@ function updateLayers() {
   const sel = state.selectedCity;
   const layers = [];
 
+  // Normalize scores to dataset range so full color+height spectrum always used
+  const scores   = state.scoredCities.map(c => c.opportunityScore);
+  const minScore = scores.length ? Math.min(...scores) : 0;
+  const maxScore = scores.length ? Math.max(...scores) : 100;
+  const scoreRange = maxScore - minScore || 1;
+  const norm = s => (s - minScore) / scoreRange;
+
   if (state.waStateGeoJson) {
     layers.push(new deck.GeoJsonLayer({
       id: 'wa-state',
@@ -150,13 +184,14 @@ function updateLayers() {
       id: 'city-glow',
       data: state.scoredCities,
       getPosition: d => [d.lng, d.lat],
-      getRadius: d => 5000 + (d.opportunityScore / 100) * 10000,
+      getRadius: d => 4000 + norm(d.opportunityScore) * 12000,
       getFillColor: d => {
-        const t = d.opportunityScore / 100;
-        return [Math.round(255 - 70 * t), Math.round(242 * (1 - t * 0.88)), Math.round(242 * (1 - t * 0.88)), Math.round(30 + t * 55)];
+        const n = norm(d.opportunityScore);
+        const [r, g, b] = lerpColor(n, COLOR_STOPS);
+        return [r, g, b, Math.round(20 + n * 65)];
       },
       radiusMinPixels: 2,
-      radiusMaxPixels: 25,
+      radiusMaxPixels: 28,
       updateTriggers: {
         getRadius: state.scoredCities.map(c => c.opportunityScore),
         getFillColor: state.scoredCities.map(c => c.opportunityScore)
@@ -170,20 +205,16 @@ function updateLayers() {
       radius: 5500,
       extruded: true,
       getPosition: d => [d.lng, d.lat],
-      getElevation: d => 3000 + Math.pow(d.opportunityScore / 100, 1.7) * 350000,
+      getElevation: d => 2000 + Math.pow(norm(d.opportunityScore), 1.5) * 380000,
       getFillColor: d => {
-        const t = d.opportunityScore / 100;
+        const n = norm(d.opportunityScore);
         const isSelected = d.id === sel;
-        return [
-          Math.round(255 - 70 * t),
-          Math.round(242 * (1 - t * 0.88)),
-          Math.round(242 * (1 - t * 0.88)),
-          isSelected ? 255 : 210
-        ];
+        const [r, g, b] = lerpColor(n, COLOR_STOPS);
+        return [r, g, b, isSelected ? 255 : 225];
       },
       pickable: true,
       autoHighlight: true,
-      highlightColor: [255, 255, 255, 50],
+      highlightColor: [255, 255, 255, 60],
       onHover: ({ object }) => {
         if (object) {
           showTooltip(
@@ -218,7 +249,7 @@ function toggleRotation() {
     btn.classList.add('active');
     animateRotation();
   } else {
-    btn.textContent = '↻ Rotate';
+    btn.textContent = '▶ Spin';
     btn.classList.remove('active');
     if (_rotateRAF) { cancelAnimationFrame(_rotateRAF); _rotateRAF = null; }
   }
@@ -226,8 +257,18 @@ function toggleRotation() {
 
 function animateRotation() {
   if (!state.deckgl) return;
-  state.viewState = { ...state.viewState, bearing: ((state.viewState.bearing || 0) + 0.25) % 360 };
+  const newBearing = ((state.viewState.bearing || 0) + 0.25) % 360;
+  state.viewState = { ...state.viewState, bearing: newBearing };
   state.deckgl.setProps({ viewState: state.viewState });
+  // Sync slider position
+  const rotSlider = document.getElementById('rotation-slider');
+  const rotVal    = document.getElementById('rotation-val');
+  if (rotSlider) {
+    const mapped = newBearing > 180 ? newBearing - 360 : newBearing;
+    rotSlider.value = mapped;
+    if (rotVal) rotVal.textContent = Math.round(mapped) + '°';
+    setSliderFill(rotSlider);
+  }
   _rotateRAF = requestAnimationFrame(animateRotation);
 }
 
@@ -555,14 +596,28 @@ function bindEvents() {
   document.getElementById('btn-reset-view').addEventListener('click', () => {
     state.deckgl.setProps({
       viewState: {
-        longitude: -120.8, latitude: 47.1, zoom: 6.5, pitch: 55, bearing: -10,
+        longitude: -120.5, latitude: 47.0, zoom: 5.9, pitch: 55, bearing: -10,
         transitionDuration: 1000,
         transitionInterpolator: new deck.FlyToInterpolator()
       }
     });
   });
 
-  // Rotation toggle
+  // Rotation slider — drag to set bearing directly
+  const rotSlider = document.getElementById('rotation-slider');
+  const rotVal    = document.getElementById('rotation-val');
+  if (rotSlider) {
+    rotSlider.addEventListener('input', () => {
+      const bearing = parseInt(rotSlider.value);
+      if (rotVal) rotVal.textContent = bearing + '°';
+      setSliderFill(rotSlider);
+      state.viewState = { ...state.viewState, bearing };
+      state.deckgl.setProps({ viewState: state.viewState });
+    });
+    setSliderFill(rotSlider);
+  }
+
+  // Spin toggle
   document.getElementById('btn-rotate').addEventListener('click', toggleRotation);
 
   // Mobile sidebar

@@ -353,7 +353,7 @@ function renderSidebar() {
     const tColor   = getTierColor(city.tier);
     const active   = state.selectedCity === city.id;
     return `
-      <div class="city-item${active ? ' active' : ''}" data-id="${city.id}" onclick="selectCity('${city.id}')">
+      <div class="city-item${active ? ' active' : ''}" data-id="${city.id}" onclick="selectCity(this.dataset.id)">
         <div class="city-rank${city.rank <= 5 ? ' top' : ''}">${city.rank}</div>
         <div class="city-swatch" style="background:${mapColor}"></div>
         <div class="city-info">

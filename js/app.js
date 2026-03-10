@@ -97,28 +97,54 @@ function initMap() {
   state.deckgl = new deck.DeckGL({
     container: 'map',
     initialViewState: state.viewState,
-    controller: true,
+    // Lock all mouse/touch input — only sliders control the view
+    controller: {
+      dragPan: false, scrollZoom: false, doubleClickZoom: false,
+      touchZoom: false, dragRotate: false, keyboard: false
+    },
     parameters: { clearColor: [0, 0, 0, 1] },
     effects: [lightingEffect],
     onViewStateChange: ({ viewState }) => {
-      // Clamp zoom: can't zoom out beyond initial WA view
-      viewState = { ...viewState, zoom: Math.max(5.9, viewState.zoom) };
-      // Sync rotation slider
-      const rotSlider = document.getElementById('rotation-slider');
-      const rotVal    = document.getElementById('rotation-val');
-      if (rotSlider) {
-        const b = Math.round(((viewState.bearing % 360) + 360) % 360);
-        const mapped = b > 180 ? b - 360 : b;
-        rotSlider.value = mapped;
-        if (rotVal) rotVal.textContent = mapped + '°';
-        setSliderFill(rotSlider);
-      }
+      // Lock center on WA; clamp zoom
+      viewState = {
+        ...viewState,
+        longitude: -120.5,
+        latitude: 47.0,
+        zoom: Math.max(5.9, Math.min(13, viewState.zoom))
+      };
+      syncRotSlider(viewState.bearing);
+      syncZoomSlider(viewState.zoom);
       state.viewState = viewState;
       state.deckgl.setProps({ viewState });
     },
-    getCursor: ({ isDragging }) => isDragging ? 'grabbing' : 'default',
+    getCursor: () => 'default',
     layers: []
   });
+}
+
+// ── Slider sync helpers ────────────────────────────────────
+function syncRotSlider(bearing) {
+  const s = document.getElementById('rotation-slider');
+  const v = document.getElementById('rotation-val');
+  if (!s) return;
+  const b = Math.round(((bearing % 360) + 360) % 360);
+  const mapped = b > 180 ? b - 360 : b;
+  s.value = mapped;
+  if (v) v.textContent = mapped + '°';
+  setSliderFill(s);
+}
+
+function syncZoomSlider(zoom) {
+  const s = document.getElementById('zoom-slider');
+  if (!s) return;
+  s.value = Math.round(zoom * 10);
+  setZoomSliderFill(s);
+}
+
+function setZoomSliderFill(slider) {
+  const pct = ((parseInt(slider.value) - parseInt(slider.min)) /
+               (parseInt(slider.max) - parseInt(slider.min))) * 100;
+  slider.style.background = `linear-gradient(to right,var(--blue) ${pct}%,#374151 ${pct}%)`;
 }
 
 // ── Load WA boundary data (US Atlas TopoJSON via CDN) ──────
@@ -310,18 +336,7 @@ function selectCity(cityId) {
   const city = state.scoredCities.find(c => c.id === cityId);
   if (!city) return;
 
-  state.deckgl.setProps({
-    viewState: {
-      longitude: city.lng,
-      latitude: city.lat,
-      zoom: Math.max((state.viewState && state.viewState.zoom) || 6, 8.5),
-      pitch: 50,
-      bearing: -15,
-      transitionDuration: 800,
-      transitionInterpolator: new deck.FlyToInterpolator()
-    }
-  });
-
+  // Map stays centered on WA — no fly-to
   document.querySelectorAll('.city-item').forEach(el =>
     el.classList.toggle('active', el.dataset.id === cityId));
 
@@ -331,6 +346,70 @@ function selectCity(cityId) {
   if (window.innerWidth < 768) {
     document.getElementById('sidebar').classList.remove('mobile-open');
   }
+}
+
+// ── Expansion insights generator ───────────────────────────
+function generateInsights(city, scoredCities) {
+  const items = [];
+  const density = ((city.smbCount / city.population) * 1000).toFixed(1);
+  const waMedian = 78687;
+
+  // Consulting competition
+  if (city.consultingFirmCount === 0) {
+    items.push({ icon: '🏆', tag: 'Zero Competition', text: `No management consulting firms identified in ${city.name}. This market has no established advisory competition — first-mover advantage available.` });
+  } else if (city.consultingFirmCount <= 2) {
+    items.push({ icon: '✅', tag: 'Low Competition', text: `Only ${city.consultingFirmCount} competing firm${city.consultingFirmCount > 1 ? 's' : ''} — market is largely untapped for business exit and M&A advisory.` });
+  } else {
+    items.push({ icon: '⚠️', tag: 'Competitive Market', text: `${city.consultingFirmCount} consulting firms present. Entry requires a differentiated service offering or niche focus.` });
+  }
+
+  // SMB pipeline
+  if (city.scores.businessAbundance > 65) {
+    items.push({ icon: '🏬', tag: 'Strong Pipeline', text: `${fmt.num(city.smbCount)} target SMBs at ${density}/1k residents — dense, high-quality client pipeline for recurring advisory engagements.` });
+  } else if (city.scores.businessAbundance > 35) {
+    items.push({ icon: '📊', tag: 'Viable Pipeline', text: `${fmt.num(city.smbCount)} SMBs (${density}/1k). Sufficient for a solo practitioner; county-wide territory recommended to maximize deal flow.` });
+  } else {
+    items.push({ icon: '💡', tag: 'Thin Pipeline', text: `${fmt.num(city.smbCount)} SMBs. Consider bundling ${city.name} with 1–2 adjacent markets to build a sustainable advisory practice.` });
+  }
+
+  // Growth trajectory
+  if (city.populationGrowthPct >= 15) {
+    items.push({ icon: '📈', tag: 'High Growth', text: `+${city.populationGrowthPct}% population growth (2010–2020). Rapidly expanding business base with new formations creating fresh succession pipeline.` });
+  } else if (city.populationGrowthPct >= 5) {
+    items.push({ icon: '📊', tag: 'Steady Growth', text: `+${city.populationGrowthPct}% population growth signals healthy economic expansion and consistent new business formation.` });
+  } else {
+    items.push({ icon: '➡️', tag: 'Stable Market', text: `Low population growth (${city.populationGrowthPct}%) — established community with mature, exit-ready owner base. Less competition for a defined pool of clients.` });
+  }
+
+  // Succession urgency
+  if (city.ownerAge55PlusPct >= 38) {
+    items.push({ icon: '⏳', tag: 'Urgent Succession Wave', text: `${city.ownerAge55PlusPct}% of population is 55+. Baby Boomer retirement creates immediate deal flow — expect 3–5 year peak of succession and sale mandates.` });
+  } else if (city.ownerAge55PlusPct >= 28) {
+    items.push({ icon: '👴', tag: 'Aging Ownership', text: `${city.ownerAge55PlusPct}% age 55+ creates meaningful succession demand over the next 5–8 years. Relationship-building now yields exits later.` });
+  }
+
+  // Income / fee tolerance
+  if (city.medianHouseholdIncome > waMedian * 1.2) {
+    items.push({ icon: '💰', tag: 'Premium Fee Market', text: `${fmt.usd(city.medianHouseholdIncome)} median HH income — 20%+ above WA average. Business owners have higher asset bases and can sustain full advisory retainers.` });
+  } else if (city.medianHouseholdIncome < waMedian * 0.8) {
+    items.push({ icon: '💡', tag: 'Value-Conscious Market', text: `${fmt.usd(city.medianHouseholdIncome)} median HH income — below WA average. Value-based pricing and contingency structures may improve engagement rates.` });
+  }
+
+  // Regional cluster
+  const nearby = scoredCities
+    .filter(c => c.id !== city.id && c.rank <= 25 &&
+      Math.sqrt(Math.pow(c.lat - city.lat, 2) + Math.pow((c.lng - city.lng) * 0.7, 2)) < 1.2)
+    .slice(0, 3);
+  if (nearby.length > 0) {
+    items.push({ icon: '🗺️', tag: 'Regional Cluster', text: `Near top-ranked markets: ${nearby.map(c => `${c.name} (#${c.rank})`).join(', ')}. A bundled multi-city territory could maximize engagement density.` });
+  }
+
+  // Business maturity
+  if (city.businessMaturityPct >= 75) {
+    items.push({ icon: '🏗️', tag: 'Mature Business Base', text: `${city.businessMaturityPct}% of businesses are 3+ years old — well past startup survival phase. Owners have proven viability and time to plan structured exits.` });
+  }
+
+  return items;
 }
 
 // ── Detail panel ───────────────────────────────────────────
@@ -365,6 +444,17 @@ function openDetailPanel(city) {
   const notesEl = document.getElementById('p-notes');
   notesEl.textContent = city.notes || '';
   notesEl.style.display = city.notes ? '' : 'none';
+
+  // Expansion insights
+  const insights = generateInsights(city, state.scoredCities);
+  document.getElementById('p-insights').innerHTML = insights.map(i => `
+    <div class="insight-item">
+      <span class="insight-icon">${i.icon}</span>
+      <div class="insight-body">
+        <div class="insight-tag">${i.tag}</div>
+        <div class="insight-text">${i.text}</div>
+      </div>
+    </div>`).join('');
 
   // Score breakdown bars
   const breakdown = [
@@ -474,38 +564,62 @@ function computeAndRender() {
   }
 }
 
+// ── Weight rebalancing — always keeps total exactly 100% ───
+function rebalanceWeights(changedKey) {
+  const slider  = document.getElementById(`w-${changedKey}`);
+  const changedVal = Math.min(parseInt(slider.max), Math.max(parseInt(slider.min), parseInt(slider.value)));
+  slider.value = changedVal;
+  state.weights[changedKey] = changedVal / 100;
+  document.getElementById(`wv-${changedKey}`).textContent = changedVal + '%';
+  setSliderFill(slider);
+
+  const target = 100 - changedVal;
+  const otherKeys = Object.keys(DEFAULT_WEIGHTS).filter(k => k !== changedKey);
+  const otherVals = otherKeys.map(k => parseInt(document.getElementById(`w-${k}`).value));
+  const otherSum  = otherVals.reduce((a, b) => a + b, 0);
+
+  let assigned = 0;
+  otherKeys.forEach((k, i) => {
+    const s = document.getElementById(`w-${k}`);
+    const disp = document.getElementById(`wv-${k}`);
+    let v;
+    if (i === otherKeys.length - 1) {
+      v = target - assigned;  // last key absorbs rounding remainder
+    } else if (otherSum > 0) {
+      v = Math.round(otherVals[i] / otherSum * target);
+    } else {
+      v = Math.round(target / otherKeys.length);
+    }
+    v = Math.max(parseInt(s.min), Math.min(parseInt(s.max), v));
+    s.value = v;
+    state.weights[k] = v / 100;
+    disp.textContent = v + '%';
+    setSliderFill(s);
+    assigned += v;
+  });
+
+  checkWeightTotal();
+}
+
 // ── Sliders (+/- buttons + range) ─────────────────────────
 function initSliders() {
   Object.keys(DEFAULT_WEIGHTS).forEach(key => {
     const slider  = document.getElementById(`w-${key}`);
     const display = document.getElementById(`wv-${key}`);
     if (!slider) return;
-
     slider.value = Math.round(state.weights[key] * 100);
     setSliderFill(slider);
     display.textContent = slider.value + '%';
-
-    slider.addEventListener('input', () => {
-      state.weights[key] = parseInt(slider.value) / 100;
-      display.textContent = slider.value + '%';
-      setSliderFill(slider);
-      checkWeightTotal();
-    });
+    slider.addEventListener('input', () => rebalanceWeights(key));
   });
 
-  // +/- buttons
   document.querySelectorAll('.w-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const key     = btn.dataset.key;
-      const delta   = parseInt(btn.dataset.delta);
-      const slider  = document.getElementById(`w-${key}`);
-      const display = document.getElementById(`wv-${key}`);
-      const newVal  = Math.min(parseInt(slider.max), Math.max(parseInt(slider.min), parseInt(slider.value) + delta));
-      slider.value              = newVal;
-      state.weights[key]        = newVal / 100;
-      display.textContent       = newVal + '%';
-      setSliderFill(slider);
-      checkWeightTotal();
+      const key    = btn.dataset.key;
+      const s      = document.getElementById(`w-${key}`);
+      const newVal = Math.min(parseInt(s.max), Math.max(parseInt(s.min), parseInt(s.value) + parseInt(btn.dataset.delta)));
+      s.value = newVal;
+      rebalanceWeights(key);
     });
   });
 
@@ -522,7 +636,7 @@ function checkWeightTotal() {
   const total = Object.values(state.weights).reduce((a, b) => a + b, 0);
   const pct   = Math.round(total * 100);
   const el    = document.getElementById('weight-total');
-  const valid = Math.abs(pct - 100) <= 1;
+  const valid = pct === 100;
   el.textContent = `Total: ${pct}%`;
   el.className   = 'weight-total ' + (valid ? 'valid' : 'invalid');
   document.getElementById('btn-apply-weights').disabled = !valid;
@@ -603,19 +717,50 @@ function bindEvents() {
     });
   });
 
-  // Rotation slider — drag to set bearing directly
+  // Bearing slider
   const rotSlider = document.getElementById('rotation-slider');
-  const rotVal    = document.getElementById('rotation-val');
   if (rotSlider) {
     rotSlider.addEventListener('input', () => {
       const bearing = parseInt(rotSlider.value);
-      if (rotVal) rotVal.textContent = bearing + '°';
+      document.getElementById('rotation-val').textContent = bearing + '°';
       setSliderFill(rotSlider);
       state.viewState = { ...state.viewState, bearing };
       state.deckgl.setProps({ viewState: state.viewState });
     });
     setSliderFill(rotSlider);
   }
+
+  // Bearing +/- step buttons
+  function stepBearing(delta) {
+    const b = Math.round(((state.viewState.bearing || 0) + delta + 180 + 360) % 360) - 180;
+    state.viewState = { ...state.viewState, bearing: b };
+    state.deckgl.setProps({ viewState: state.viewState });
+    syncRotSlider(b);
+  }
+  document.getElementById('btn-bear-minus').addEventListener('click', () => stepBearing(-1));
+  document.getElementById('btn-bear-plus').addEventListener('click',  () => stepBearing(1));
+
+  // Zoom slider
+  const zoomSlider = document.getElementById('zoom-slider');
+  if (zoomSlider) {
+    zoomSlider.addEventListener('input', () => {
+      const zoom = parseInt(zoomSlider.value) / 10;
+      setZoomSliderFill(zoomSlider);
+      state.viewState = { ...state.viewState, zoom };
+      state.deckgl.setProps({ viewState: state.viewState });
+    });
+    setZoomSliderFill(zoomSlider);
+  }
+
+  // Zoom +/- buttons
+  function stepZoom(delta) {
+    const zoom = Math.max(5.9, Math.min(13, (state.viewState.zoom || 5.9) + delta));
+    state.viewState = { ...state.viewState, zoom };
+    state.deckgl.setProps({ viewState: state.viewState });
+    syncZoomSlider(zoom);
+  }
+  document.getElementById('btn-zoom-in').addEventListener('click',  () => stepZoom(0.1));
+  document.getElementById('btn-zoom-out').addEventListener('click', () => stepZoom(-0.1));
 
   // Spin toggle
   document.getElementById('btn-rotate').addEventListener('click', toggleRotation);

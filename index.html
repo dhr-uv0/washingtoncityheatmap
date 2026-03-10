@@ -61,7 +61,9 @@
 
   <div class="hd-rotation">
     <span class="hd-rot-label">↻ Bearing</span>
+    <button class="rot-step-btn" id="btn-bear-minus" title="−1°">−</button>
     <input type="range" id="rotation-slider" min="-180" max="180" step="1" value="-10" />
+    <button class="rot-step-btn" id="btn-bear-plus" title="+1°">+</button>
     <span class="hd-rot-val" id="rotation-val">-10°</span>
   </div>
 
@@ -184,6 +186,15 @@
       <button class="map-ctrl-btn" id="btn-reset-view" title="Reset view">⌖</button>
     </div>
 
+    <!-- Zoom slider -->
+    <div id="zoom-ctrl">
+      <button class="map-ctrl-btn" id="btn-zoom-in" title="Zoom in">+</button>
+      <div class="zoom-slider-wrap">
+        <input type="range" id="zoom-slider" min="59" max="130" step="1" value="59" title="Zoom" />
+      </div>
+      <button class="map-ctrl-btn" id="btn-zoom-out" title="Zoom out">−</button>
+    </div>
+
     <!-- Legend -->
     <div id="legend">
       <div class="legend-title">Opportunity Score</div>
@@ -241,6 +252,10 @@
 
     <!-- Notes -->
     <div class="dp-notes" id="p-notes"></div>
+
+    <!-- Expansion Insights -->
+    <div class="dp-section-title">Expansion Insights</div>
+    <div id="p-insights"></div>
 
     <!-- Score breakdown -->
     <div class="dp-section-title">Score Breakdown</div>

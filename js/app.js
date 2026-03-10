@@ -151,7 +151,7 @@ function countyHover(e, fips) {
   e.target.setStyle(countyStyle(fips, true));
   e.target.bringToFront();
   const entry = state.countyScores[fips];
-  if (entry) showTooltip(e.originalEvent, entry.city.name, entry.score, entry.city.tier);
+  if (entry) showTooltip(e.originalEvent, entry.city.name, entry.score, entry.city.tier, entry.city.county.split('/')[0].trim());
 }
 
 function countyOut(e, fips) {
@@ -196,7 +196,7 @@ function renderCityMarkers() {
     }).addTo(state.map);
 
     m.on('click', () => selectCity(city.id));
-    m.on('mouseover', e => showTooltip(e.originalEvent, city.name, city.opportunityScore, city.tier));
+    m.on('mouseover', e => showTooltip(e.originalEvent, city.name, city.opportunityScore, city.tier, city.county.split('/')[0].trim()));
     m.on('mouseout', hideTooltip);
     state.cityMarkers[city.id] = m;
   });
@@ -223,14 +223,17 @@ function updateMarkerStyles() {
 // ── Tooltip ────────────────────────────────────────────────
 let _tip = null;
 
-function showTooltip(e, name, score, tier) {
+function showTooltip(e, name, score, tier, county) {
   hideTooltip();
   _tip = document.createElement('div');
   _tip.className = 'map-tooltip';
   const fill = scoreToMapColor(score);
   const dark = score > 55;
   _tip.innerHTML = `
-    <div class="tip-name">${name}</div>
+    <div>
+      <div class="tip-name">${name}</div>
+      ${county ? `<div class="tip-county">${county} County</div>` : ''}
+    </div>
     <div class="tip-meta">
       <span class="tip-score" style="background:${fill};color:${dark?'#fff':'#111'}">${score.toFixed(0)}</span>
       <span class="tip-tier" style="color:${getTierColor(tier)}">T${tier}</span>
@@ -298,7 +301,8 @@ function openDetailPanel(city) {
   const tCol   = getTierColor(city.tier);
 
   document.getElementById('p-name').textContent    = city.name;
-  document.getElementById('p-county').textContent  = city.county + ' County';
+  const countyLabel = city.county.includes('/') ? city.county + ' Counties' : city.county + ' County';
+  document.getElementById('p-county').textContent  = countyLabel;
   document.getElementById('p-rank').textContent    = `#${city.rank} of ${state.scoredCities.length} cities`;
 
   const scoreEl = document.getElementById('p-score');
@@ -318,7 +322,9 @@ function openDetailPanel(city) {
   });
 
   document.getElementById('p-estimated').classList.toggle('hidden', !city.estimated);
-  document.getElementById('p-notes').textContent = city.notes;
+  const notesEl = document.getElementById('p-notes');
+  notesEl.textContent = city.notes || '';
+  notesEl.style.display = city.notes ? '' : 'none';
 
   // Score breakdown bars
   const breakdown = [
@@ -541,6 +547,9 @@ function bindEvents() {
     computeAndRender();
   });
 
+  // Export CSV
+  document.getElementById('btn-export').addEventListener('click', exportCSV);
+
   // Sources modal
   document.getElementById('btn-sources').addEventListener('click', () =>
     document.getElementById('sources-modal').classList.add('open'));
@@ -557,6 +566,27 @@ function bindEvents() {
   // Mobile sidebar
   document.getElementById('sidebar-toggle').addEventListener('click', () =>
     document.getElementById('sidebar').classList.toggle('mobile-open'));
+}
+
+// ── Export CSV ─────────────────────────────────────────────
+function exportCSV() {
+  const headers = ['Rank','City','County','Tier','Score','Opportunity',
+    'Population','MedianIncome','ConsultingFirms','SMBs','BusinessMaturityPct',
+    'OwnerAge55PlusPct','PopGrowthPct'];
+  const rows = state.scoredCities.map(c => [
+    c.rank, c.name, c.county, c.tier,
+    c.opportunityScore.toFixed(1), getOpportunityLabel(c.opportunityScore),
+    c.population, c.medianHouseholdIncome, c.consultingFirmCount,
+    c.smbCount, c.businessMaturityPct, c.ownerAge55PlusPct, c.populationGrowthPct
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v =>
+    typeof v === 'string' && v.includes(',') ? `"${v}"` : v
+  ).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'wa-market-intelligence.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 // ── Bootstrap ──────────────────────────────────────────────

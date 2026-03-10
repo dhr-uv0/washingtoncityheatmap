@@ -445,6 +445,9 @@ html, body {
 .tip-name {
   font-size: 13px; font-weight: 600; color: var(--text-1);
 }
+.tip-county {
+  font-size: 10px; color: var(--text-3); margin-top: 2px;
+}
 .tip-meta {
   display: flex; align-items: center; gap: 6px;
 }

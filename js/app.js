@@ -26,7 +26,7 @@ const state = {
   filtered: [],
   selectedCity: null,
   weights: { ...DEFAULT_WEIGHTS },
-  viewState: { longitude: -120.5, latitude: 47.35, zoom: 6.0, pitch: 50, bearing: -15 },
+  viewState: { longitude: -120.8, latitude: 47.1, zoom: 6.5, pitch: 55, bearing: -10 },
   _mouseX: 0,
   _mouseY: 0
 };
@@ -84,6 +84,8 @@ function initMap() {
     parameters: { clearColor: [0, 0, 0, 1] },
     effects: [lightingEffect],
     onViewStateChange: ({ viewState }) => {
+      // Clamp zoom: can't zoom out beyond initial WA view
+      viewState = { ...viewState, zoom: Math.max(6.5, viewState.zoom) };
       state.viewState = viewState;
       state.deckgl.setProps({ viewState });
     },
@@ -124,9 +126,9 @@ function updateLayers() {
       id: 'wa-state',
       data: state.waStateGeoJson,
       filled: true,
-      getFillColor: [12, 20, 35, 255],
+      getFillColor: [8, 28, 48, 255],
       stroked: true,
-      getLineColor: [60, 100, 155, 255],
+      getLineColor: [80, 130, 200, 255],
       lineWidthMinPixels: 2
     }));
   }
@@ -137,12 +139,30 @@ function updateLayers() {
       data: state.waCountiesGeoJson,
       filled: false,
       stroked: true,
-      getLineColor: [40, 65, 100, 120],
-      lineWidthMinPixels: 0.5
+      getLineColor: [50, 85, 130, 160],
+      lineWidthMinPixels: 0.8
     }));
   }
 
   if (state.scoredCities.length) {
+    // Glow halos at city bases for topography depth effect
+    layers.push(new deck.ScatterplotLayer({
+      id: 'city-glow',
+      data: state.scoredCities,
+      getPosition: d => [d.lng, d.lat],
+      getRadius: d => 5000 + (d.opportunityScore / 100) * 10000,
+      getFillColor: d => {
+        const t = d.opportunityScore / 100;
+        return [Math.round(255 - 70 * t), Math.round(242 * (1 - t * 0.88)), Math.round(242 * (1 - t * 0.88)), Math.round(30 + t * 55)];
+      },
+      radiusMinPixels: 2,
+      radiusMaxPixels: 25,
+      updateTriggers: {
+        getRadius: state.scoredCities.map(c => c.opportunityScore),
+        getFillColor: state.scoredCities.map(c => c.opportunityScore)
+      }
+    }));
+
     layers.push(new deck.ColumnLayer({
       id: 'city-spikes',
       data: state.scoredCities,
@@ -150,7 +170,7 @@ function updateLayers() {
       radius: 5500,
       extruded: true,
       getPosition: d => [d.lng, d.lat],
-      getElevation: d => 15000 + (d.opportunityScore / 100) * 235000,
+      getElevation: d => 3000 + Math.pow(d.opportunityScore / 100, 1.7) * 350000,
       getFillColor: d => {
         const t = d.opportunityScore / 100;
         const isSelected = d.id === sel;
@@ -184,6 +204,30 @@ function updateLayers() {
   }
 
   state.deckgl.setProps({ layers });
+}
+
+// ── Rotation animation ─────────────────────────────────────
+let _rotateRAF = null;
+let _rotating  = false;
+
+function toggleRotation() {
+  _rotating = !_rotating;
+  const btn = document.getElementById('btn-rotate');
+  if (_rotating) {
+    btn.textContent = '⏹ Stop';
+    btn.classList.add('active');
+    animateRotation();
+  } else {
+    btn.textContent = '↻ Rotate';
+    btn.classList.remove('active');
+    if (_rotateRAF) { cancelAnimationFrame(_rotateRAF); _rotateRAF = null; }
+  }
+}
+
+function animateRotation() {
+  state.viewState = { ...state.viewState, bearing: ((state.viewState.bearing || 0) + 0.25) % 360 };
+  state.deckgl.setProps({ viewState: state.viewState });
+  _rotateRAF = requestAnimationFrame(animateRotation);
 }
 
 // ── Tooltip ────────────────────────────────────────────────
@@ -510,12 +554,15 @@ function bindEvents() {
   document.getElementById('btn-reset-view').addEventListener('click', () => {
     state.deckgl.setProps({
       viewState: {
-        longitude: -120.5, latitude: 47.35, zoom: 6.0, pitch: 50, bearing: -15,
+        longitude: -120.8, latitude: 47.1, zoom: 6.5, pitch: 55, bearing: -10,
         transitionDuration: 1000,
         transitionInterpolator: new deck.FlyToInterpolator()
       }
     });
   });
+
+  // Rotation toggle
+  document.getElementById('btn-rotate').addEventListener('click', toggleRotation);
 
   // Mobile sidebar
   document.getElementById('sidebar-toggle').addEventListener('click', () =>

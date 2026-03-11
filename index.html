@@ -14,9 +14,6 @@
   <!-- TopoJSON (for county boundary rendering) -->
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 
-  <!-- deck.gl -->
-  <script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
-
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -173,7 +170,7 @@
     <div id="city-list"></div>
 
     <div class="sb-footer">
-      <span>Data vintage: 2021 ACS / CBP</span>
+      <span>Data vintage: ACS 2023 / CBP 2022</span>
     </div>
   </aside>
 
@@ -267,7 +264,7 @@
 
     <div class="dp-methodology">
       <strong>Methodology:</strong> 5 weighted criteria normalized 0–100 across WA city dataset.
-      Adjust weights via the ⚖️ button. Data: Census ACS 2021, CBP 2021, BLS BED.
+      Adjust weights via the ⚖️ button. Data: Census ACS 2023, CBP 2022, BLS BED.
     </div>
   </div>
 </div>
@@ -301,7 +298,7 @@
       <div class="modal-box green">
         <strong>Tier 3 Target Zone Rationale</strong><br/>
         Equal weighting of population size, median household income, and 2010–2020 growth rate
-        (all normalized 0–100). Tier 3 mid-markets (30k–95k pop) are large enough for consistent
+        (all normalized 0–100). Tier 3 mid-markets (30k–59k pop) are large enough for consistent
         SMB pipeline, small enough to be underserved by national consulting competitors.
       </div>
     </div>
@@ -312,5 +309,7 @@
 <script src="js/data.js"></script>
 <script src="js/scoring.js"></script>
 <script src="js/app.js"></script>
+<!-- deck.gl must follow app.js but precede DOMContentLoaded execution -->
+<script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
 </body>
 </html>

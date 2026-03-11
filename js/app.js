@@ -485,14 +485,14 @@ function openDetailPanel(city) {
   // Metrics grid
   const smbDensity = ((city.smbCount / city.population) * 1000).toFixed(1);
   document.getElementById('p-metrics').innerHTML = [
-    { v: fmt.num(city.population),                  l: 'Population',         s: '2020 Census'  },
-    { v: fmt.usd(city.medianHouseholdIncome),        l: 'Median HH Income',   s: 'ACS 2021'     },
-    { v: city.consultingFirmCount,                   l: 'Consulting Firms',   s: 'CBP est.'     },
-    { v: fmt.num(city.smbCount),                     l: 'SMBs (5–249 emp)',   s: 'CBP est.'     },
+    { v: fmt.num(city.population),                  l: 'Population',         s: 'ACS 2023'     },
+    { v: fmt.usd(city.medianHouseholdIncome),        l: 'Median HH Income',   s: 'ACS 2023'     },
+    { v: city.consultingFirmCount,                   l: 'Consulting Firms',   s: 'CBP 2022'     },
+    { v: fmt.num(city.smbCount),                     l: 'SMBs (5–249 emp)',   s: 'CBP 2022'     },
     { v: smbDensity + '/1k',                         l: 'SMB Density',        s: 'Derived'      },
     { v: city.businessMaturityPct + '%',             l: 'Businesses 3+ Yrs',  s: 'BLS est.'     },
-    { v: city.ownerAge55PlusPct + '%',               l: 'Population 55+',     s: 'ACS 2021'     },
-    { v: '+' + city.populationGrowthPct + '%',       l: 'Pop. Growth 10–20',  s: 'Census'       }
+    { v: city.ownerAge55PlusPct + '%',               l: 'Population 55+',     s: 'ACS 2023'     },
+    { v: '+' + city.populationGrowthPct + '%',       l: 'Pop. Growth 10–20',  s: 'Census 2020'  }
   ].map(m => `
     <div class="metric-card">
       <div class="metric-value">${m.v}</div>
@@ -597,6 +597,23 @@ function rebalanceWeights(changedKey) {
     setSliderFill(s);
     assigned += v;
   });
+
+  // If clamping caused the total to drift from 100, nudge the first unclamped slider
+  const drift = 100 - (changedVal + assigned);
+  if (drift !== 0) {
+    for (const k of otherKeys) {
+      const s = document.getElementById(`w-${k}`);
+      const cur = parseInt(s.value);
+      const nudged = cur + drift;
+      if (nudged >= parseInt(s.min) && nudged <= parseInt(s.max)) {
+        s.value = nudged;
+        state.weights[k] = nudged / 100;
+        document.getElementById(`wv-${k}`).textContent = nudged + '%';
+        setSliderFill(s);
+        break;
+      }
+    }
+  }
 
   checkWeightTotal();
 }

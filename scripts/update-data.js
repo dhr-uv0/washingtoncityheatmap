@@ -474,6 +474,48 @@ function buildDataJs(staticCities, acsData, cbpCityData, acsVintage, cbpVintage)
  * lastUpdated: "${updated}"
  */
 
+const DATA_METADATA = {
+  lastUpdated: "${updated}",
+  dataYear: ${acsVintage},
+  sources: [
+    {
+      metric: "Population",
+      source: "U.S. Census Bureau, ACS 5-Year Estimates ${acsVintage} (B01003_001E)",
+      updateFrequency: "Annual (ACS 5-yr, released Dec)"
+    },
+    {
+      metric: "Median Household Income",
+      source: "U.S. Census Bureau, ACS 5-Year Estimates ${acsVintage}, Table B19013",
+      updateFrequency: "Annual (ACS 5-yr, released Dec)"
+    },
+    {
+      metric: "Population Growth %",
+      source: "ACS ${acsVintage} vs 2020 Decennial Census (P1_001N)",
+      updateFrequency: "Annual vs fixed 2020 baseline"
+    },
+    {
+      metric: "Consulting Firm Count",
+      source: "County Business Patterns ${cbpVintage}, NAICS 5416 — city pop-share apportioned",
+      updateFrequency: "Annual (CBP ~18-month lag)"
+    },
+    {
+      metric: "SMB Count",
+      source: "CBP ${cbpVintage}, NAICS 23/31-33/42/44-45/48-49/54/62/72 (5-249 emp) — city apportioned",
+      updateFrequency: "Annual (CBP ~18-month lag)"
+    },
+    {
+      metric: "Business Maturity %",
+      source: "BLS Business Employment Dynamics, WA state 3-yr survival (61% baseline), city-adjusted",
+      updateFrequency: "Annual (BLS BED)"
+    },
+    {
+      metric: "Owner Age 55+ %",
+      source: "U.S. Census Bureau, ACS 5-Year Estimates ${acsVintage}, Table B01001",
+      updateFrequency: "Annual (ACS 5-yr, released Dec)"
+    }
+  ]
+};
+
 const CITY_DATA = [`;
 
   const TIER_LABELS = {
@@ -520,7 +562,7 @@ const CITY_DATA = [`;
     tier: ${tier},
     estimated: false,
     dataYear: ${acsVintage},
-    notes: "${st.notes}"
+    notes: "${st.notes || ''}"
   }`;
     blocks.push(block);
   }

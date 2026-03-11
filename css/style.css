@@ -66,7 +66,7 @@ html, body {
   gap: 16px; z-index: 9999;
   transition: opacity 400ms ease;
 }
-#loading-overlay.hidden { opacity: 0; pointer-events: none; }
+#loading-overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
 
 .spinner {
   width: 36px; height: 36px;
@@ -88,6 +88,7 @@ html, body {
   padding: 0 16px; gap: 14px;
   z-index: 1000;
   box-shadow: 0 1px 0 var(--border), var(--sh-sm);
+  overflow: hidden;
 }
 
 .hd-brand {
@@ -420,7 +421,7 @@ html, body {
 #map-wrap {
   flex: 1; position: relative; overflow: hidden;
 }
-#map { width: 100%; height: 100%; background: #000; }
+#map { width: 100%; height: 100%; background: #000; position: relative; }
 
 /* Map controls (top-right) */
 .map-ctrl {
@@ -441,13 +442,14 @@ html, body {
 
 /* ── Zoom Control (right side of map) ─────────────────────── */
 #zoom-ctrl {
-  position: absolute; right: 12px; top: 52px;
+  position: absolute; right: 12px; top: 56px;
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   z-index: 500;
 }
 .zoom-slider-wrap {
   height: 120px; width: 32px;
   display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
 #zoom-slider {
   -webkit-appearance: none; appearance: none;
@@ -596,7 +598,7 @@ html, body {
 }
 .dp-close:hover { background: var(--bg-hover); color: var(--text-1); }
 
-.dp-body { flex: 1; overflow-y: auto; padding: 16px; }
+.dp-body { flex: 1; overflow-y: auto; padding: 16px 16px 32px; }
 
 /* Hero */
 .dp-hero {
@@ -771,7 +773,9 @@ html, body {
 @media (max-width: 768px) {
   :root { --dp-w: 100vw; }
 
-  .hd-stats { display: none; }
+  .hd-stats    { display: none; }
+  .hd-rotation { display: none; }
+  .hd-actions  { display: none; }
   .hd-title { font-size: 13px; }
 
   #sidebar {

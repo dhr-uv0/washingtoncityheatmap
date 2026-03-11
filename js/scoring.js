@@ -279,11 +279,11 @@ function getTierColor(tier) {
  * Get opportunity level label from score.
  */
 function getOpportunityLabel(score) {
-  if (score >= 75) return "Excellent";
-  if (score >= 60) return "Strong";
-  if (score >= 45) return "Moderate";
-  if (score >= 30) return "Limited";
-  return "Low";
+  if (score >= 75) return "Priority Target";
+  if (score >= 60) return "Strong Candidate";
+  if (score >= 45) return "Viable Secondary";
+  if (score >= 30) return "Monitor";
+  return "Pass";
 }
 
 /**

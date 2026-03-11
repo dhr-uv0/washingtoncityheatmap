@@ -353,60 +353,83 @@ function generateInsights(city, scoredCities) {
   const items = [];
   const density = ((city.smbCount / city.population) * 1000).toFixed(1);
   const waMedian = 78687;
+  const maEstimate = Math.round(city.consultingFirmCount * 0.20) || 0;
+  const s = n => n === 1 ? '' : 's';
 
-  // Consulting competition
+  // ── Consulting competition (uses SCORE, not raw count) ──────────────────
+  const absScore = city.scores.consultingAbsence;
   if (city.consultingFirmCount === 0) {
-    items.push({ icon: '🏆', tag: 'Zero Competition', text: `No management consulting firms identified in ${city.name}. This market has no established advisory competition — first-mover advantage available.` });
-  } else if (city.consultingFirmCount <= 2) {
-    items.push({ icon: '✅', tag: 'Low Competition', text: `Only ${city.consultingFirmCount} competing firm${city.consultingFirmCount > 1 ? 's' : ''} — market is largely untapped for business exit and M&A advisory.` });
+    items.push({ icon: '🏆', tag: 'Zero Competition', text: `No consulting firms of any type identified in ${city.name}. For exit and succession advisory this market is completely uncontested — maximum first-mover advantage with no incumbent relationships to overcome.` });
+  } else if (absScore >= 85) {
+    items.push({ icon: '✅', tag: 'First-Mover Window', text: `${city.consultingFirmCount} firm${s(city.consultingFirmCount)} across all consulting categories (NAICS 5416) — approximately ${maEstimate || 1} focused on M&A or exit advisory. This market is functionally uncontested for succession mandates; early relationships become long-term referral anchors before any competitor identifies the opportunity.` });
+  } else if (absScore >= 65) {
+    items.push({ icon: '📋', tag: 'Low Advisory Competition', text: `${city.consultingFirmCount} consulting firm${s(city.consultingFirmCount)} total — ~${maEstimate} likely focused on exit or M&A advisory specifically. The competitive field is thin; the majority serve IT, HR, or operational niches. Entry now establishes positioning before growth attracts specialized competitors.` });
+  } else if (absScore >= 45) {
+    items.push({ icon: '📊', tag: 'Differentiation Required', text: `${city.consultingFirmCount} consulting firm${s(city.consultingFirmCount)} in market (~${maEstimate} M&A-relevant). Advisory competition exists but is not dominant. A focused exit-and-succession positioning creates a defensible specialty niche — lead with referral channel development over broad marketing.` });
   } else {
-    items.push({ icon: '⚠️', tag: 'Competitive Market', text: `${city.consultingFirmCount} consulting firms present. Entry requires a differentiated service offering or niche focus.` });
+    items.push({ icon: '⚠️', tag: 'Competitive Market', text: `${city.consultingFirmCount} consulting firm${s(city.consultingFirmCount)} represent meaningful saturation for this market size (~${maEstimate} M&A-relevant). Entry requires a highly differentiated model, a sub-niche specialization, or an anchor referral relationship providing protected deal flow.` });
   }
 
-  // SMB pipeline
-  if (city.scores.businessAbundance > 65) {
-    items.push({ icon: '🏬', tag: 'Strong Pipeline', text: `${fmt.num(city.smbCount)} target SMBs at ${density}/1k residents — dense, high-quality client pipeline for recurring advisory engagements.` });
-  } else if (city.scores.businessAbundance > 35) {
-    items.push({ icon: '📊', tag: 'Viable Pipeline', text: `${fmt.num(city.smbCount)} SMBs (${density}/1k). Sufficient for a solo practitioner; county-wide territory recommended to maximize deal flow.` });
+  // ── SMB pipeline (uses score) ──────────────────────────────────────────
+  const abScore = city.scores.businessAbundance;
+  if (abScore >= 70) {
+    items.push({ icon: '🏬', tag: 'High-Density Pipeline', text: `${fmt.num(city.smbCount)} target-profile SMBs at ${density}/1k residents — unusually business-dense. A solo practitioner can maintain 8–12 active advisory relationships while the pool is large enough that referral attrition doesn't constrain throughput.` });
+  } else if (abScore >= 45) {
+    items.push({ icon: '📊', tag: 'Sustainable Practice Pipeline', text: `${fmt.num(city.smbCount)} SMBs across target sectors — sufficient for a solo exit advisory practice at steady state. County-wide territory coverage recommended to supplement the city footprint; expect a 24–36 month relationship-building runway to target deal cadence.` });
+  } else if (abScore >= 25) {
+    items.push({ icon: '💡', tag: 'Thin but Viable', text: `${fmt.num(city.smbCount)} target SMBs makes ${city.name} a secondary rather than standalone practice hub. Most viable as an anchor within a multi-city territory — bundling with 1–2 adjacent markets creates a combined pipeline sufficient for consistent engagement.` });
   } else {
-    items.push({ icon: '💡', tag: 'Thin Pipeline', text: `${fmt.num(city.smbCount)} SMBs. Consider bundling ${city.name} with 1–2 adjacent markets to build a sustainable advisory practice.` });
+    items.push({ icon: '🔍', tag: 'Insufficient Pipeline — Bundle Only', text: `${fmt.num(city.smbCount)} SMBs cannot generate consistent advisory mandates as a standalone market. Treat as an ancillary market within a broader sub-regional territory centered on a higher-density primary city.` });
   }
 
-  // Growth trajectory
-  if (city.populationGrowthPct >= 15) {
-    items.push({ icon: '📈', tag: 'High Growth', text: `+${city.populationGrowthPct}% population growth (2010–2020). Rapidly expanding business base with new formations creating fresh succession pipeline.` });
-  } else if (city.populationGrowthPct >= 5) {
-    items.push({ icon: '📊', tag: 'Steady Growth', text: `+${city.populationGrowthPct}% population growth signals healthy economic expansion and consistent new business formation.` });
+  // ── Growth trajectory ──────────────────────────────────────────────────
+  if (city.populationGrowthPct >= 10) {
+    items.push({ icon: '📈', tag: 'High Growth Market', text: `+${city.populationGrowthPct}% population growth (2020–2023) signals rapid business formation. New SMBs create a future succession pipeline, though current businesses are still early-stage. Enter now to build relationships before the ownership cohort matures.` });
+  } else if (city.populationGrowthPct >= 3) {
+    items.push({ icon: '📊', tag: 'Steady Growth', text: `+${city.populationGrowthPct}% growth (2020–2023) reflects healthy economic expansion. A mix of established businesses approaching exit timelines and newer formations building the 5-year pipeline.` });
+  } else if (city.populationGrowthPct >= 0) {
+    items.push({ icon: '➡️', tag: 'Stable Market', text: `Flat growth (${city.populationGrowthPct}%, 2020–2023) — an established community whose businesses have aged organically into exit-readiness. Owners are making succession decisions now, not in five years.` });
   } else {
-    items.push({ icon: '➡️', tag: 'Stable Market', text: `Low population growth (${city.populationGrowthPct}%) — established community with mature, exit-ready owner base. Less competition for a defined pool of clients.` });
+    items.push({ icon: '📉', tag: 'Population Declining', text: `${city.populationGrowthPct}% decline (2020–2023). Exits in this market may carry compressed valuations and urgency-driven timelines. Restructuring and ESOP advisory can be a strong value proposition alongside traditional sale mandates.` });
   }
 
-  // Succession urgency
-  if (city.ownerAge55PlusPct >= 38) {
-    items.push({ icon: '⏳', tag: 'Urgent Succession Wave', text: `${city.ownerAge55PlusPct}% of population is 55+. Baby Boomer retirement creates immediate deal flow — expect 3–5 year peak of succession and sale mandates.` });
-  } else if (city.ownerAge55PlusPct >= 28) {
-    items.push({ icon: '👴', tag: 'Aging Ownership', text: `${city.ownerAge55PlusPct}% age 55+ creates meaningful succession demand over the next 5–8 years. Relationship-building now yields exits later.` });
+  // ── Succession urgency (uses score) ────────────────────────────────────
+  const demoScore = city.scores.ownerDemographics;
+  if (demoScore >= 80) {
+    items.push({ icon: '⏳', tag: 'Peak Succession Window', text: `${city.ownerAge55PlusPct}% of population is 55+ — top tier for WA succession urgency. Baby Boomer business owners here are past the planning phase and into the decision phase. This is not a market to enter in two years; it is a market to enter this cycle.` });
+  } else if (demoScore >= 55) {
+    items.push({ icon: '👴', tag: 'Active Succession Wave', text: `${city.ownerAge55PlusPct}% age 55+ creates a meaningful near-term succession pipeline. The leading edge of this cohort is actively engaged in exit planning now; the trailing edge provides a 5–8 year deal-flow horizon.` });
+  } else if (demoScore >= 35) {
+    items.push({ icon: '🌱', tag: 'Succession Pipeline Building', text: `${city.ownerAge55PlusPct}% age 55+ is at or modestly above the WA average — a developing rather than urgent succession pipeline. Worth entering for strategic positioning with a 3–5 year relationship-cultivation runway.` });
   }
 
-  // Income / fee tolerance
-  if (city.medianHouseholdIncome > waMedian * 1.2) {
-    items.push({ icon: '💰', tag: 'Premium Fee Market', text: `${fmt.usd(city.medianHouseholdIncome)} median HH income — 20%+ above WA average. Business owners have higher asset bases and can sustain full advisory retainers.` });
-  } else if (city.medianHouseholdIncome < waMedian * 0.8) {
-    items.push({ icon: '💡', tag: 'Value-Conscious Market', text: `${fmt.usd(city.medianHouseholdIncome)} median HH income — below WA average. Value-based pricing and contingency structures may improve engagement rates.` });
+  // ── Income / fee tolerance (4 tiers) ───────────────────────────────────
+  const inc = city.medianHouseholdIncome;
+  if (inc > waMedian * 1.3) {
+    items.push({ icon: '💰', tag: 'Premium Fee Market', text: `${fmt.usd(inc)} median HH income — ${Math.round((inc/waMedian - 1)*100)}% above WA average. Owners have higher asset bases, more sophisticated planning horizons, and demonstrated ability to engage advisory at market rates. Full retainer plus success-fee structures are appropriate.` });
+  } else if (inc >= waMedian) {
+    items.push({ icon: '💵', tag: 'Market-Rate Fees', text: `${fmt.usd(inc)} median HH income near the WA average supports standard advisory fee structures. Success-fee-weighted arrangements will close faster than pure retainer models with this income band.` });
+  } else if (inc >= waMedian * 0.8) {
+    items.push({ icon: '💡', tag: 'Value-Sensitive Market', text: `${fmt.usd(inc)} median income is modestly below WA average. Lead with value demonstration — a complimentary business valuation assessment or educational workshop — to reduce friction in engagement conversion.` });
+  } else {
+    items.push({ icon: '🔧', tag: 'Value-Conscious Market', text: `${fmt.usd(inc)} median income is meaningfully below WA average. Contingency-weighted structures and lower retainer thresholds are recommended. Compensate with higher transaction cadence and deep referral leverage.` });
   }
 
-  // Regional cluster
+  // ── Regional cluster ───────────────────────────────────────────────────
   const nearby = scoredCities
     .filter(c => c.id !== city.id && c.rank <= 25 &&
       Math.sqrt(Math.pow(c.lat - city.lat, 2) + Math.pow((c.lng - city.lng) * 0.7, 2)) < 1.2)
     .slice(0, 3);
   if (nearby.length > 0) {
-    items.push({ icon: '🗺️', tag: 'Regional Cluster', text: `Near top-ranked markets: ${nearby.map(c => `${c.name} (#${c.rank})`).join(', ')}. A bundled multi-city territory could maximize engagement density.` });
+    items.push({ icon: '🗺️', tag: 'Regional Cluster', text: `Near top-ranked markets: ${nearby.map(c => `${c.name} (#${c.rank})`).join(', ')}. A bundled sub-regional territory dramatically increases combined SMB pipeline and justifies a dedicated practice investment.` });
   }
 
-  // Business maturity
-  if (city.businessMaturityPct >= 75) {
-    items.push({ icon: '🏗️', tag: 'Mature Business Base', text: `${city.businessMaturityPct}% of businesses are 3+ years old — well past startup survival phase. Owners have proven viability and time to plan structured exits.` });
+  // ── Business maturity (uses score) ────────────────────────────────────
+  const matScore = city.scores.businessMaturity;
+  if (matScore >= 65) {
+    items.push({ icon: '🏗️', tag: 'Exit-Ready Business Base', text: `${city.businessMaturityPct}% of businesses have passed the 3-year survival threshold — above the national benchmark. This population of proven, established businesses includes owners who have navigated startup risk and now face genuine succession decisions.` });
+  } else if (matScore >= 40) {
+    items.push({ icon: '🏗️', tag: 'Established Business Community', text: `${city.businessMaturityPct}% business maturity aligns with WA state norms — a healthy distribution for advisory practice development, with the mature cohort generating near-term exit mandates and newer businesses building the 5-year pipeline.` });
   }
 
   return items;
@@ -429,7 +452,9 @@ function openDetailPanel(city) {
   scoreEl.style.color  = uiCol;
 
   const labelEl = document.getElementById('p-label');
-  labelEl.textContent  = getOpportunityLabel(score) + ' Opportunity';
+  const labelSuffix = { 'Priority Target': '— Enter This Cycle', 'Strong Candidate': '— Plan Entry', 'Viable Secondary': '— Bundle With Primary', 'Monitor': '— Revisit in 2 Yrs', 'Pass': '— Insufficient Pipeline' };
+  const lbl = getOpportunityLabel(score);
+  labelEl.textContent = lbl + ' ' + (labelSuffix[lbl] || '');
   labelEl.style.color  = uiCol;
 
   const tierEl = document.getElementById('p-tier');
@@ -441,9 +466,20 @@ function openDetailPanel(city) {
   });
 
   document.getElementById('p-estimated').classList.toggle('hidden', !city.estimated);
-  const notesEl = document.getElementById('p-notes');
-  notesEl.textContent = city.notes || '';
-  notesEl.style.display = city.notes ? '' : 'none';
+
+  // Market Brief (rich strategic notes)
+  const notesCard = document.getElementById('p-notes-card');
+  const notesTitle = document.getElementById('p-notes-title');
+  if (city.notes) {
+    notesCard.innerHTML = city.notes.split('\n').map(line =>
+      line.trim() ? `<p class="notes-line">${line.trim()}</p>` : ''
+    ).join('');
+    notesCard.style.display = '';
+    notesTitle.style.display = '';
+  } else {
+    notesCard.style.display = 'none';
+    notesTitle.style.display = 'none';
+  }
 
   // Expansion insights
   const insights = generateInsights(city, state.scoredCities);
@@ -487,12 +523,12 @@ function openDetailPanel(city) {
   document.getElementById('p-metrics').innerHTML = [
     { v: fmt.num(city.population),                  l: 'Population',         s: 'ACS 2023'     },
     { v: fmt.usd(city.medianHouseholdIncome),        l: 'Median HH Income',   s: 'ACS 2023'     },
-    { v: city.consultingFirmCount,                   l: 'Consulting Firms',   s: 'CBP 2022'     },
+    { v: city.consultingFirmCount + ' (~' + (Math.round(city.consultingFirmCount * 0.20) || 0) + ' M&A)', l: 'Consulting Firms', s: 'CBP 2022' },
     { v: fmt.num(city.smbCount),                     l: 'SMBs (5–249 emp)',   s: 'CBP 2022'     },
     { v: smbDensity + '/1k',                         l: 'SMB Density',        s: 'Derived'      },
     { v: city.businessMaturityPct + '%',             l: 'Businesses 3+ Yrs',  s: 'BLS est.'     },
     { v: city.ownerAge55PlusPct + '%',               l: 'Population 55+',     s: 'ACS 2023'     },
-    { v: '+' + city.populationGrowthPct + '%',       l: 'Pop. Growth 10–20',  s: 'Census 2020'  }
+    { v: city.populationGrowthPct + '%',              l: 'Pop. Growth 20–23',  s: 'ACS vs Census' }
   ].map(m => `
     <div class="metric-card">
       <div class="metric-value">${m.v}</div>

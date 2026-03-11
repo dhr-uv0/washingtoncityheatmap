@@ -94,7 +94,7 @@ const CITY_DATA = [
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "Largest WA city; saturated with Big 4, boutique, and tech-adjacent consultancies"
+    notes: "Washington's tech and biotech capital, home to Amazon, Boeing, and a dense ecosystem of professional services firms. Despite enormous SMB volume, the market is saturated with Big 4, regional advisory, and boutique M&A firms. The cost of client acquisition here far exceeds that of any Tier 3 market — advisory margins are compressed and relationships are already claimed. Avoid as a standalone practice target."
   },
   {
     id: "bellevue",
@@ -112,7 +112,7 @@ const CITY_DATA = [
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "Microsoft/Amazon ecosystem generates extreme consulting firm density"
+    notes: "Microsoft and Amazon's corporate neighbor — the highest-income large city in WA. Consulting saturation is extreme, but the exit market for tech-adjacent SMBs (SaaS, managed services, fintech) is real and underserved by traditional advisory firms that lack tech sector expertise. Niche entry as a tech SMB exit specialist is viable."
   },
   {
     id: "spokane",
@@ -130,7 +130,7 @@ const CITY_DATA = [
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "Eastern WA hub; growing consulting presence but lower income limits fees"
+    notes: "Eastern Washington's regional hub anchored by healthcare, higher education, and logistics — a diverse SMB base with meaningful succession dynamics. The Spokane market is value-conscious ($66k median income) and relationship-driven; entry through the Spokane Chamber and regional CPA network is the correct play. Competition exists but is not organized around exit and succession advisory specifically."
   },
   {
     id: "tacoma",
@@ -148,7 +148,7 @@ const CITY_DATA = [
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "Port city with industrial SMB base; proximity to Seattle increases competition"
+    notes: "A port and manufacturing city with a large, diverse SMB base including logistics, food processing, and professional services. Income at the WA median supports standard fee structures. The market has established consulting presence but exit advisory remains underserved outside the downtown core. Pierce County banking relationships are the key referral channel."
   },
   {
     id: "vancouver",
@@ -166,7 +166,7 @@ const CITY_DATA = [
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "Portland metro spillover; strong growth but competition from OR firms"
+    notes: "Clark County's largest city, effectively part of the Portland-Vancouver metro and influenced by Oregon's lower tax environment. Many business owners here have cross-border financial considerations that complicate exit structuring — a genuine specialty niche. Consulting competition exists but is Portland-facing; a WA-specific advisory practice has clear differentiation."
   },
   {
     id: "kent",
@@ -177,14 +177,14 @@ const CITY_DATA = [
     population: 135015,
     medianHouseholdIncome: 90000,
     populationGrowthPct: -1.2,
-    consultingFirmCount: 226,
+    consultingFirmCount: 102,
     smbCount: 1821,
     businessMaturityPct: 63,
     ownerAge55PlusPct: 17.5,
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "Industrial/logistics hub; King County consulting density bleeds in"
+    notes: "Boeing's supply chain heart — a dense corridor of aerospace manufacturing, logistics, and industrial services SMBs. Many are second-generation family businesses whose owners spent careers supplying Boeing and are now approaching exit with no succession plan. Fee capacity is adequate ($90k median); competition is low relative to SMB density once King County inflation is corrected."
   },
   {
     id: "everett",
@@ -202,7 +202,7 @@ const CITY_DATA = [
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "Boeing manufacturing ecosystem; moderate consulting competition"
+    notes: "A Tier 1 city anchored by Boeing's commercial aircraft production and a growing port economy. The manufacturing ecosystem creates natural advisory demand — owners of aerospace suppliers, machine shops, and industrial distributors are aging into succession decisions. Income and SMB density both support a sustainable practice."
   },
   {
     id: "renton",
@@ -213,14 +213,14 @@ const CITY_DATA = [
     population: 105279,
     medianHouseholdIncome: 97000,
     populationGrowthPct: -1.4,
-    consultingFirmCount: 176,
+    consultingFirmCount: 80,
     smbCount: 1420,
     businessMaturityPct: 63,
     ownerAge55PlusPct: 18.5,
     tier: 1,
     estimated: false,
     dataYear: 2023,
-    notes: "High growth; Boeing HQ and Amazon logistics proximity drives firm presence"
+    notes: "Home to Boeing HQ and increasingly Amazon's logistics network. The industrial-to-tech transition is creating business ownership churn — companies being acquired, spun off, or reorganized. Owner demographics skew younger than typical Tier 1 cities due to Amazon's workforce, but the Boeing legacy businesses represent mature succession targets."
   },
 
   // ─── TIER 2: Secondary Metros (High Competition — Generally Avoid) 
@@ -240,7 +240,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Google campus and tech-adjacent; very high consulting density for city size"
+    notes: "Google's Puget Sound campus anchors high income ($144k) and sophisticated professional services. Entry is viable only with tech-sector differentiation."
   },
   {
     id: "redmond",
@@ -258,7 +258,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Microsoft HQ; highest consulting density per capita in WA outside Seattle"
+    notes: "Microsoft's global headquarters creates WA's most concentrated per-capita income and consulting density market. Advisory for tech-adjacent SMBs (managed services, SaaS, tech staffing) is viable with specific sector expertise."
   },
 
   // ─── TIER 1: Major Hubs (Avoid — Oversaturated) ──────────────
@@ -291,14 +291,14 @@ const CITY_DATA = [
     population: 66375,
     medianHouseholdIncome: 227000,
     populationGrowthPct: -1.6,
-    consultingFirmCount: 96,
+    consultingFirmCount: 48,
     smbCount: 776,
     businessMaturityPct: 57,
     ownerAge55PlusPct: 13.7,
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Wealthy tech suburb; few SMBs relative to population, high consulting presence"
+    notes: "One of the wealthiest residential cities in the nation ($227k median income) with a largely tech-worker bedroom community character. Despite extreme affluence, the commercial SMB base is thin — most wealth here is W-2 compensation from Redmond and Bellevue employers rather than business ownership. Prioritize neighboring markets for advisory practice development."
   },
 
   // ─── TIER 3: Mid-Markets (OPTIMAL — Low-Mod Competition) ─────
@@ -318,7 +318,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "High-income fast-growth suburb; biotech/tech cluster raises consulting density"
+    notes: "A biotech and pharmaceutical corridor (UW Bothell campus, Kenmore Air adjacent) with strong professional services SMBs and premium household income ($132k). Only 24 consulting firms for 48k people. The biotech ecosystem creates unique exit advisory opportunities — owners of life sciences service companies (CROs, testing labs, specialty distributors) are sophisticated about valuation but often lack M&A-specific advisors."
   },
 
   // ─── TIER 2: Secondary Metros (High Competition — Generally Avoid) 
@@ -331,14 +331,14 @@ const CITY_DATA = [
     population: 99232,
     medianHouseholdIncome: 82000,
     populationGrowthPct: -1.8,
-    consultingFirmCount: 144,
+    consultingFirmCount: 70,
     smbCount: 1160,
     businessMaturityPct: 63,
     ownerAge55PlusPct: 21.7,
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Diverse economy; relatively low consulting density despite King County location"
+    notes: "A diverse, immigrant-rich city with a large retail and service SMB base — one of the most demographically complex markets in WA. Consulting competition is lower than the King County average once the density artifact is corrected. Income at the WA median supports standard fee structures. Entry through multicultural business associations and commercial banks serving the diverse community creates unique access."
   },
   {
     id: "bellingham",
@@ -356,7 +356,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Northwest hub near Canada; outdoor/retail/services SMB base, light competition"
+    notes: "Whatcom County's largest city with WWU, cross-border Canada trade, and a growing retail and outdoor economy."
   },
   {
     id: "kennewick",
@@ -374,7 +374,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Tri-Cities anchor; agriculture/energy/government SMB base, very low competition"
+    notes: "Tri-Cities anchor with the highest SMB count in the region. Agricultural services, food processing, construction, and retail form the SMB backbone. DOE Hanford adjacency creates a professional services layer. Best served as the center of a combined Tri-Cities territory with Richland and Pasco — combined that gives ~2,000+ SMBs with only ~110 consulting firms total."
   },
   {
     id: "yakima",
@@ -392,7 +392,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Agricultural hub; mature businesses, low income limits but underserved market"
+    notes: "Washington's agricultural processing hub and the center of the state's tree fruit industry. The SMB ecosystem includes food processors, agricultural input suppliers, cold storage operators, and farm equipment dealers — many in second or third-generation ownership with no formal succession infrastructure. Income at $59k is the binding constraint; success-fee structures work better than retainers here."
   },
   {
     id: "auburn",
@@ -403,14 +403,14 @@ const CITY_DATA = [
     population: 85455,
     medianHouseholdIncome: 95000,
     populationGrowthPct: -2.1,
-    consultingFirmCount: 124,
+    consultingFirmCount: 68,
     smbCount: 999,
     businessMaturityPct: 63,
     ownerAge55PlusPct: 18.3,
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Growing industrial/logistics base; good SMB density, manageable competition"
+    notes: "A dense industrial and logistics corridor with aerospace manufacturing, warehousing, and retail serving the King-Pierce county border. Strong SMB density at 85k population with an established owner cohort. Income is well above WA median. Advisory access through Auburn Area Chamber and commercial lending relationships at local banks."
   },
   {
     id: "marysville",
@@ -428,7 +428,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Rapidly growing; established manufacturing/retail SMBs, very few consultants"
+    notes: "A fast-growing Snohomish County city benefiting from Tulalip Tribes economic development, manufacturing expansion, and I-5 corridor logistics. Income at $100k and growing with only 42 consulting firms creates a legitimate first-mover window. The tribal gaming economy adjacent to Marysville creates unique business ownership structures worth understanding before approaching clients."
   },
   {
     id: "pasco",
@@ -446,7 +446,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Fastest-growing Tri-City; younger demographics but strong agri-business SMBs"
+    notes: "The fastest-growing of the Tri-Cities, driven by agricultural processing expansion and a young Hispanic workforce. SMB count is suppressed by the exclusion of agriculture (NAICS 11), which understates the true addressable market by 30–40%. Owners of food processing facilities, agricultural input distributors, and farm labor companies represent meaningful succession demand not visible in the raw count."
   },
   {
     id: "lakewood",
@@ -464,7 +464,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "Military-adjacent economy; retail/service SMB base with aging ownership"
+    notes: "Pierce County's largest unincorporated city, heavily influenced by Joint Base Lewis-McChord — a government-adjacent economy with healthcare, retail, and professional services SMBs. Military-adjacent markets have unique ownership dynamics: many businesses are owned by retired servicemembers who are disciplined about planning but may have modest asset bases. Income at $71k is just above the value-sensitive threshold."
   },
 
   // ─── TIER 3: Mid-Markets (OPTIMAL — Low-Mod Competition) ─────
@@ -477,14 +477,14 @@ const CITY_DATA = [
     population: 59280,
     medianHouseholdIncome: 113000,
     populationGrowthPct: 1.1,
-    consultingFirmCount: 86,
+    consultingFirmCount: 36,
     smbCount: 693,
     businessMaturityPct: 59,
     ownerAge55PlusPct: 27.4,
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "High-income inner suburb; retail/service mix, moderate competition for size"
+    notes: "A dense inner suburb north of Seattle with the feel of a standalone city — diverse retail, healthcare services, and professional services SMBs. After correcting the King County consulting count artifact, this is a genuinely underserved market. High income ($113k) and a meaningful 55+ cohort (27%) make it one of the strongest Tier 3 targets. Entry through the Shoreline Chamber and Snohomish County CPA network."
   },
 
   // ─── TIER 2: Secondary Metros (High Competition — Generally Avoid) 
@@ -504,7 +504,7 @@ const CITY_DATA = [
     tier: 2,
     estimated: false,
     dataYear: 2023,
-    notes: "DOE/Hanford economy; high incomes, government-adjacent SMBs, strong exit potential"
+    notes: "The most affluent of the Tri-Cities ($93k income) due to DOE and Department of Energy national lab employment. Government contractors and professional services firms represent a significant succession challenge — regulatory requirements constrain buyer eligibility. High technical workforce literacy means owners are more receptive to sophisticated advisory structures including ESAPs and ESOP alternatives."
   },
 
   // ─── TIER 3: Mid-Markets (OPTIMAL — Low-Mod Competition) ─────
@@ -524,7 +524,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "State capital; policy/government consulting present but traditional SMBs underserved"
+    notes: "Washington's state capital creates an economy dominated by government and government-adjacent professional services — lobbying, policy consulting, regulatory compliance. The commercial SMB advisory niche is distinct from these government consulting firms and effectively uncontested. High community visibility through the Thurston Chamber positions a practice quickly. Bundle with Lacey and Tumwater for a complete Thurston County territory."
   },
   {
     id: "lacey",
@@ -542,7 +542,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "WA's fastest-growing city; strong retail/service SMB base, low consulting presence"
+    notes: "Fastest-growing city in Washington at 6.7% population growth since 2020, driven by transit-oriented development and Thurston County's expanding healthcare and retail sectors. The growth wave is simultaneously creating new business formation and aging the incumbent owner cohort — a rare dual-pipeline opportunity. Only 36 consulting firms for 57k people. A Thurston County territory covering Lacey, Olympia, and Tumwater gives a combined 1,150+ SMB universe."
   },
   {
     id: "burien",
@@ -553,14 +553,14 @@ const CITY_DATA = [
     population: 51331,
     medianHouseholdIncome: 91000,
     populationGrowthPct: -1.4,
-    consultingFirmCount: 74,
+    consultingFirmCount: 30,
     smbCount: 600,
     businessMaturityPct: 63,
     ownerAge55PlusPct: 21.9,
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "SeaTac-adjacent; diverse small business community, moderate aging demographics"
+    notes: "A SeaTac-adjacent city with a genuinely diverse immigrant business community — Korean, Latino, and East African-owned businesses make up a meaningful share of the SMB base. After correcting the King County consulting count artifact, advisory competition is modest. Entry strategy should include the Highline Chamber and multilingual community banking relationships that already serve these owners. Income at $91k supports standard fee structures."
   },
   {
     id: "lynnwood",
@@ -578,7 +578,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Retail corridor city; Link light rail expansion driving business growth"
+    notes: "Light rail extension to Lynnwood (opening 2024-2025) is transforming commercial character and driving 6.2% population growth. The transit-oriented development conversation is creating business transitions — owners near new station areas face buy-out offers and relocation decisions that require advisory support. Established retail and service SMBs with 20-30 year owner tenures are approaching natural succession windows simultaneously."
   },
   {
     id: "puyallup",
@@ -596,7 +596,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Growing Tacoma suburb; established retail/agriculture SMBs with aging owners"
+    notes: "Pierce County's commercial hub beyond Tacoma, known for the Washington State Fair and a diverse retail and agricultural fair economy. Strong income at $96k and established SMB base in retail, food service, and agricultural services. Owned businesses here tend to be multi-generational; family dynamics often complicate succession without professional guidance. Bundle with University Place and Bonney Lake for a full South Pierce territory."
   },
   {
     id: "edmonds",
@@ -614,7 +614,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Affluent waterfront community; high 55+ demographics = strong exit timeline pressure"
+    notes: "The highest-conviction Tier 3 entry target in the dataset. Waterfront location, premium income ($116k), the highest age 55+ of any Tier 3 city (30.3%), and only 21 consulting firms. Succession wave is cresting now — not in five years. CPAs and wealth managers in the South Snohomish corridor are already seeing owner inquiries; becoming the recognized exit advisory specialist here is achievable within 12 months of territory activation."
   },
   {
     id: "bremerton",
@@ -632,7 +632,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Naval shipyard city; service/retail SMBs, Peninsula isolation limits competition"
+    notes: "Home to Puget Sound Naval Shipyard — WA's largest naval installation. The economy blends Navy contract services, retail, and healthcare. Geographic isolation across Puget Sound naturally limits consulting competition. Kitsap Transit's passenger ferry creates manageable access from Seattle. Owner demographics are younger than average (Navy influence) but the civilian business population is aging. The Kitsap Economic Development Alliance is the entry point."
   },
   {
     id: "wenatchee",
@@ -650,7 +650,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Apple industry hub; mature agriculture/retail SMBs, minimal consulting competition"
+    notes: "Central Washington's regional hub in the heart of the apple industry. The SMB ecosystem includes orchard equipment dealers, packinghouses, cold storage operators, agricultural lenders, and farm supply companies — many in generational transition right now. Only 24 consulting firms for 35k people. Geographic isolation from the west side limits competition. Position as the specialist for agricultural-adjacent business exits through the Washington State Tree Fruit Association."
   },
   {
     id: "mount-vernon",
@@ -668,7 +668,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Skagit Valley agricultural center; tulip/nursery/food processing SMBs, underserved"
+    notes: "Skagit Valley's commercial center — the definitive agricultural hub advisory play in northern WA. Agricultural-adjacent SMBs are in generational transition. Only 17 competing firms. Top-5 Tier 3 entry target."
   },
   {
     id: "walla-walla",
@@ -686,7 +686,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Wine industry hub; highly mature businesses, aging owners, almost no competition"
+    notes: "WA's wine capital has transformed from an agricultural town into a premium hospitality and wine industry hub. Wineries, tasting rooms, wine-adjacent hospitality businesses, and specialty food producers are concentrated here with significant asset values (vineyard real estate, brand equity, distribution) that dwarf what median income suggests. Position specifically as the wine industry and agri-tourism exit specialist — this vertical specialty commands premium positioning."
   },
   {
     id: "longview",
@@ -704,7 +704,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Industrial/timber city; mature manufacturing SMBs approaching ownership transition"
+    notes: "The most underpenetrated advisory market in the Tier 3 dataset: only 7 consulting firms for 38k people. Timber, paper manufacturing, and port-adjacent industrial SMBs have complex succession needs and face industry consolidation pressure. ESOP structures work well for industrial businesses with loyal workforces. Income at $61k requires success-fee-weighted pricing, but deal sizes can be substantial in manufacturing exits."
   },
   {
     id: "university-place",
@@ -722,7 +722,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Affluent Tacoma suburb; residential but with established service SMB base"
+    notes: "An affluent Pierce County suburb ($95k median income) with a service and healthcare SMB base adjacent to the University of Washington Tacoma campus. Only 14 consulting firms. Best practiced as an anchor within a South Pierce County territory (with Puyallup and Bonney Lake) given the 248 SMB count is at the solo-practice floor. Premium income makes per-engagement economics strong."
   },
   {
     id: "issaquah",
@@ -733,14 +733,14 @@ const CITY_DATA = [
     population: 39472,
     medianHouseholdIncome: 154000,
     populationGrowthPct: -1.4,
-    consultingFirmCount: 48,
+    consultingFirmCount: 32,
     smbCount: 390,
     businessMaturityPct: 59,
     ownerAge55PlusPct: 16.3,
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Affluent but tech-adjacent; high consulting density for city size, lower priority"
+    notes: "Home to Costco HQ and a high-income tech suburb ($154k median) with a significant service SMB base. After correcting the King County count artifact, advisory competition is more manageable. The affluent, tech-adjacent owner population is financially sophisticated — value proposition must go beyond basic valuation to include tax-efficient exit structuring, earn-out optimization, and buyer selection strategy."
   },
   {
     id: "seatac",
@@ -751,14 +751,14 @@ const CITY_DATA = [
     population: 31143,
     medianHouseholdIncome: 77000,
     populationGrowthPct: -1,
-    consultingFirmCount: 38,
+    consultingFirmCount: 12,
     smbCount: 308,
     businessMaturityPct: 62,
     ownerAge55PlusPct: 18.7,
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "Airport economy; hospitality/logistics SMBs, relatively low consulting presence"
+    notes: "SeaTac's economy is dominated by Sea-Tac International Airport — hospitality, logistics, car rental, freight forwarding, and airport services. These businesses are primarily owner-operated with high revenues but thin margins compressed by airline contracts. Exit advisory here focuses on strategic buyer identification (often larger logistics or hospitality consolidators) rather than family succession. After correcting the count artifact, advisory competition is minimal."
   },
 
   // ─── TIER 4: Smaller Markets (Viable with Caveats) ───────────
@@ -778,7 +778,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Fast-growing Olympia suburb; Olympia consulting bleedover raises competition ratio"
+    notes: "Thurston County's manufacturing and brewing hub — craft beverage, food processing, and industrial services. Part of the compelling Olympia-Lacey-Tumwater Thurston County territory."
   },
 
   // ─── TIER 3: Mid-Markets (OPTIMAL — Low-Mod Competition) ─────
@@ -798,7 +798,7 @@ const CITY_DATA = [
     tier: 3,
     estimated: false,
     dataYear: 2023,
-    notes: "WSU college town; depressed income metrics, very young demographics, limited exits"
+    notes: "Washington State University dominates this city — 30k+ students drive 85% of the local economy. The 8.9% age 55+ rate and $45k median income both reflect student demographics, not the actual business owner population. True M&A advisory demand comes from the small cohort of established non-university businesses (hospitality, retail, professional services) serving the permanent community. Treat as part of a larger Palouse region territory."
   },
 
   // ─── TIER 4: Smaller Markets (Viable with Caveats) ───────────
@@ -818,7 +818,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Agricultural/industrial center; mature SMBs, very low consulting presence"
+    notes: "Grant County's commercial hub with a distinctive dual economy: conventional agriculture (potatoes, corn, wheat) and a rapidly growing data center industry (Microsoft, Sabey, Dell — attracted by cheap Columbia Basin hydropower). The intersection of agricultural succession and tech-sector facility management creates unusual advisory opportunities. Only 7 consulting firms for 25k people."
   },
   {
     id: "ellensburg",
@@ -836,7 +836,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "CWU college town; mixed demographics, agriculture/service SMBs, minimal competition"
+    notes: "Central Washington University drives the economy — a college town with modest SMB activity primarily in retail, food service, and agricultural services supporting the broader Kittitas Valley. Age 55+ at 15% reflects student demographics. True advisory opportunity is limited to the non-university commercial sector; treat as an ancillary market within a Central WA territory."
   },
   {
     id: "port-angeles",
@@ -854,7 +854,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Olympic Peninsula hub; extremely high 55+ pct, oldest SMB base in WA, peak exit zone"
+    notes: "Olympic Peninsula's largest city, anchored by the ferry connection to Victoria BC and a declining timber economy supplemented by healthcare and retail. Business succession here often involves distressed situations — owners who need to exit as the industrial base contracts. Income at $62k is in the value-conscious range. Genuine geographic isolation means virtually no consulting competition from west-side firms."
   },
   {
     id: "oak-harbor",
@@ -872,7 +872,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Naval air station city; stable military-adjacent SMBs, isolated from competition"
+    notes: "Whidbey Island Naval Air Station dominates — the local civilian economy consists of businesses serving the base population: retail, food service, healthcare, and personal services. Many owners are military veterans who value structured planning and understand organizational change. Ferry access creates minor friction but also limits competition. Income at $72k requires value-conscious fee structuring."
   },
   {
     id: "anacortes",
@@ -890,7 +890,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Refinery/marine hub; high income, very high 55+ pct, established SMBs ready for exit"
+    notes: "Skagit County's port city — oil refinery (Tesoro/Marathon), Washington State Ferry hub, and a thriving maritime SMB ecosystem. Age 55+ at 38.1% is the highest of any Tier 4 city and well into \"urgent succession wave\" territory. Income at $90k supports professional fee structures. The refinery and maritime economy creates technical complexity in business exits that generalist advisors avoid — a real specialty opportunity. Bundle with Mount Vernon and Burlington."
   },
   {
     id: "centralia",
@@ -908,7 +908,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "I-5 corridor city; retail/service SMBs, mature ownership base, very little competition"
+    notes: "I-5 corridor commercial hub midway between Seattle and Portland. Outlet retail, manufacturing, and agricultural services form the SMB base. The region is economically challenged — income at $68k and a history of industrial contraction creates distressed succession scenarios alongside traditional planned exits. Low consulting presence (3 firms) makes this market effectively uncontested."
   },
   {
     id: "aberdeen",
@@ -926,7 +926,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Declining timber economy; very low income limits deal sizes, though exits are needed"
+    notes: "Grays Harbor's largest city with a timber heritage and challenging economic context — income at $57k and negative population trends. Business succession here tends to be distressed, with owners seeking exits from legacy timber-adjacent businesses as the industry contracts. Advisory focus on restructuring, asset sales, and succession-under-pressure scenarios rather than premium exit planning."
   },
   {
     id: "maple-valley",
@@ -937,14 +937,14 @@ const CITY_DATA = [
     population: 28121,
     medianHouseholdIncome: 148000,
     populationGrowthPct: 0.4,
-    consultingFirmCount: 34,
+    consultingFirmCount: 16,
     smbCount: 278,
     businessMaturityPct: 61,
     ownerAge55PlusPct: 14.1,
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Affluent fast-growing suburb; few SMBs relative to population, younger demographics"
+    notes: "An affluent King County exurb ($148k income) with a retail and professional services SMB base. After correcting the density artifact, only 16 consulting firms. High income supports premium advisory fees. Part of a natural Maple Valley-Black Diamond-Covington territory."
   },
   {
     id: "covington",
@@ -955,14 +955,14 @@ const CITY_DATA = [
     population: 20957,
     medianHouseholdIncome: 127000,
     populationGrowthPct: 0.9,
-    consultingFirmCount: 26,
+    consultingFirmCount: 10,
     smbCount: 207,
     businessMaturityPct: 61,
     ownerAge55PlusPct: 17.6,
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Affluent suburban community; limited SMB density, newer development patterns"
+    notes: "A King County unincorporated area with bedroom community character and premium income ($127k). After correcting the consulting count artifact, competition is thin. Best served as part of a bundled Kent-Auburn-Covington corridor territory focused on the industrial and retail SMB base of the greater South King County market."
   },
 
   // ─── TIER 5: Micro Markets (Limited SMB Density) ─────────────
@@ -982,7 +982,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Nordic-heritage tourist town; artisan/retail SMBs, high 55+ pct, minimal competition"
+    notes: "A Scandinavian-heritage Kitsap Peninsula community with boutique retail, marine services, and healthcare SMBs. Affluent character ($104k income) with a meaningful 55+ demographic. Part of a natural North Kitsap advisory territory with Silverdale and Kingston. Marine industry succession (boatyards, chandleries, charter operations) is a specific specialty opportunity."
   },
   {
     id: "kelso",
@@ -1000,7 +1000,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Small industrial city; Longview adjacent, limited SMB count constrains opportunity"
+    notes: "Cowlitz County's smaller twin city to Longview, sharing the timber, port, and industrial economy. Combines with Longview to create a 50k-person combined market with only 9 consulting firms total. The combined Longview-Kelso territory is the most underpenetrated Tier 3-equivalent advisory market in the entire dataset."
   },
 
   // ─── TIER 4: Smaller Markets (Viable with Caveats) ───────────
@@ -1020,7 +1020,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Fast-growing Clark County suburb; high income, tech workers, few consulting firms"
+    notes: "Clark County's affluent manufacturing hub, home to HP's laser jet division and Georgia-Pacific. High income ($140k) and a concentration of high-technology manufacturing SMBs in the supply chain. Only 20 consulting firms. The manufacturing-to-tech transition creates specific exit advisory demand — owners of precision manufacturing, electronics assembly, and industrial services companies are seeking successors or strategic buyers."
   },
   {
     id: "battle-ground",
@@ -1038,7 +1038,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Rapidly expanding Clark County suburb; growing SMB base with minimal consulting presence"
+    notes: "Clark County's fast-growing bedroom community (+17% population growth) with a young owner population establishing new businesses. The succession pipeline is long-term — today's new business formations are 10-15 year advisory relationships, not near-term exit mandates. Best served as part of a Clark County territory with Ridgefield and Camas."
   },
   {
     id: "washougal",
@@ -1056,7 +1056,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Columbia River gorge community; growing industrial/retail SMB base, light competition"
+    notes: "A small Clark County city with manufacturing heritage (Pendleton Woolen Mills, other textile and industrial) transitioning toward Portland-area bedroom community status. Income at $108k reflects the affluent commuter population. Manufacturing succession is the specific advisory angle — owners of established industrial businesses face acquisition pressure from larger manufacturers."
   },
   {
     id: "bonney-lake",
@@ -1074,7 +1074,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Pierce County bedroom community; growing population, young demographics, underserved SMBs"
+    notes: "An affluent Pierce County bedroom community with premium income ($132k) and a retail and service SMB base — 9 consulting firms for 23k residents. Part of a natural Puyallup-Bonney Lake-Sumner corridor advisory territory."
   },
 
   // ─── TIER 5: Micro Markets (Limited SMB Density) ─────────────
@@ -1094,7 +1094,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Affluent waterfront community; high-income owners, mature businesses, modest competition"
+    notes: "The most compelling Tier 5 market in the dataset: 36.6% age 55+, $106k income, and only 5 consulting firms for 12k residents. The affluent waterfront community of retirees, medical professionals, and business owners provides premium fee capacity and urgent succession need. Best served as part of a South Kitsap territory with Port Orchard and Bremerton."
   },
 
   // ─── TIER 4: Smaller Markets (Viable with Caveats) ───────────
@@ -1114,7 +1114,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Snohomish County exurb; growing trade/services SMB base, very limited consulting presence"
+    notes: "Snohomish County's eastern gateway — a mix of agricultural services, retail, and light manufacturing along Highway 2. Income at $108k reflects the affluent exurban character. Part of a natural Highway 2 corridor territory with Sultan, Index, and Startup. Small but high-income SMB base."
   },
   {
     id: "arlington",
@@ -1132,7 +1132,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "North Snohomish hub; aerospace/manufacturing adjacency, modest SMB density, low competition"
+    notes: "Snohomish County's agricultural and industrial hub at the base of the Cascade foothills. Dairy farming support services, manufacturing, and retail form the SMB base. Income at $99k and only 10 consulting firms. The Stillaguamish Valley agricultural economy is entering generational transition."
   },
   {
     id: "mukilteo",
@@ -1150,7 +1150,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Boeing-adjacent affluent suburb; high income, established SMBs, some consulting overlap"
+    notes: "A premium Puget Sound waterfront community adjacent to Paine Field (Boeing's secondary field) with extremely high income ($123k) and a 29.2% age 55+ population — the best succession timing + income combination among Tier 4 cities. Only 11 consulting firms. Boeing-adjacent manufacturing services businesses represent unique succession complexity around government contract transferability."
   },
   {
     id: "mill-creek",
@@ -1168,7 +1168,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Affluent Snohomish planned community; high income professionals, growing SMB corridor"
+    notes: "A Snohomish County planned community with premium income ($122k), high home ownership, and a retail/professional services SMB base. Only 10 consulting firms. The community is mature — established businesses averaging 15-20 years old are in natural exit windows. Part of an Everett-Lynnwood-Mill Creek corridor territory."
   },
   {
     id: "port-orchard",
@@ -1186,7 +1186,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Kitsap County seat; growing ferry community, trade/retail SMBs, minimal consulting"
+    notes: "Kitsap County seat across from Bremerton, with retail, healthcare services, and government-adjacent businesses. Income at $91k is solid. The broader South Kitsap market (Port Orchard, Bremerton, Gig Harbor) creates a natural combined advisory territory with the peninsula's geographic isolation providing competitive protection."
   },
   {
     id: "lynden",
@@ -1204,7 +1204,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Whatcom County ag/trade hub; Dutch heritage community, strong SMB base, minimal competition"
+    notes: "A tight-knit agricultural and Dutch-heritage community in northern Whatcom County near the Canadian border. The SMB base is anchored by dairy farming support services, food processing, retail, and construction. Family business succession here is culturally embedded — generational transitions are common but often poorly structured. Income at $95k supports standard advisory fees. The Lynden Chamber is a genuine community institution."
   },
   {
     id: "ferndale",
@@ -1222,7 +1222,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Fast-growing Whatcom suburb near Bellingham; industrial/retail corridor, low consulting density"
+    notes: "Whatcom County's industrial anchor — refineries (BP Cherry Point, adjacent), manufacturing, and port services. Owner demographics are skewing older and the industrial sector is consolidating. Exit advisory with a focus on industrial asset valuation and strategic buyer identification is the right positioning. Only 12 consulting firms despite meaningful industrial SMB activity."
   },
   {
     id: "sunnyside",
@@ -1240,7 +1240,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Lower Yakima Valley ag community; food processing SMBs, very low consulting presence"
+    notes: "A Yakima Valley agricultural processing community — fruit packing, cold storage, and agricultural services. Only 3 consulting firms for 16k residents. Income at $62k is value-conscious but agricultural businesses here often have asset values that exceed income metrics. Part of a Yakima Valley sub-regional territory."
   },
 
   // ─── TIER 5: Micro Markets (Limited SMB Density) ─────────────
@@ -1260,7 +1260,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Wenatchee MSA Douglas County anchor; ag/retail SMBs complement Wenatchee opportunity"
+    notes: "Douglas County's commercial extension of Wenatchee across the Columbia River. Part of the Wenatchee MSA advisory territory — the same advisory positioning covers both communities effectively."
   },
   {
     id: "snoqualmie",
@@ -1278,7 +1278,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Fastest-growing King County suburb; affluent young families, nascent SMB base"
+    notes: "An affluent King County exurb ($198k income) near the Snoqualmie Falls tourist attraction. Very young demographic (9.7% age 55+) reflects recent tech-worker family migration. Business succession is a decade away for most current SMBs. High income is the primary asset for advisory engagement economics when opportunities do arise."
   },
   {
     id: "enumclaw",
@@ -1296,7 +1296,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "King County exurb at Cascade foothills; ag/equestrian economy, low consulting saturation"
+    notes: "A rural King County community with agricultural, equestrian, and timber economic character. Income at $92k reflects the affluent rural owner profile. Only 14 consulting firms. Part of a natural rural King County advisory territory with Black Diamond and Auburn."
   },
   {
     id: "woodinville",
@@ -1314,7 +1314,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Wine country & affluent suburb; high-value SMBs in hospitality/retail, some consulting overlap"
+    notes: "Wine country in King County's northeast — a concentration of wineries, tasting rooms, and premium retail with extremely high income ($159k). The wine industry creates unique succession advisory opportunities (vineyard acquisition, brand exit, hospitality business sales). Only 15 consulting firms for a very affluent market. Wine industry exit specialty positioning is the right entry play."
   },
 
   // ─── TIER 4: Smaller Markets (Viable with Caveats) ───────────
@@ -1334,7 +1334,7 @@ const CITY_DATA = [
     tier: 4,
     estimated: false,
     dataYear: 2023,
-    notes: "Dense Snohomish suburb; light rail access improving, diverse SMB base, moderate competition"
+    notes: "A dense inner suburb at the Snohomish-King county border with strong transit access (Light Rail). Income at $87k and a diverse retail/professional services SMB base. Only 11 consulting firms. Benefits from proximity to both Lynnwood and Shoreline market reach."
   },
 
   // ─── TIER 5: Micro Markets (Limited SMB Density) ─────────────
@@ -1347,14 +1347,14 @@ const CITY_DATA = [
     population: 12576,
     medianHouseholdIncome: 118000,
     populationGrowthPct: 21.9,
-    consultingFirmCount: 9,
+    consultingFirmCount: 2,
     smbCount: 94,
     businessMaturityPct: 59,
     ownerAge55PlusPct: 17.4,
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Exploding Clark County exurb; very high growth, nascent business base, zero consulting"
+    notes: "Clark County's fastest-growing suburb with recent industrial development and a young business formation wave. Exit advisory timing is early — businesses established in the last 5-10 years are not yet ready for succession. Best approached as part of a Clark County portfolio for future pipeline development."
   },
   {
     id: "sumner",
@@ -1372,7 +1372,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Pierce County trade hub; daffodil valley, wholesale/distribution SMBs, minimal competition"
+    notes: "A Pierce County logistics hub with berry processing, warehousing, and light industrial SMBs. Only 4 consulting firms for 10k residents. The logistics and food processing sectors are consolidating — owner exits often occur through strategic acquisition rather than family succession. Income at $96k supports solid fee structures."
   },
   {
     id: "orting",
@@ -1390,7 +1390,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Rapidly growing Puyallup Valley town; young demographic, new SMBs forming, no competition"
+    notes: "A small Pierce County community in the Puyallup River valley with agricultural and residential character. The Rainier lahar risk zone adds unusual property risk considerations to business valuations — advisors must understand this context. Small market; part of a broader South Pierce County territory."
   },
   {
     id: "north-bend",
@@ -1401,14 +1401,14 @@ const CITY_DATA = [
     population: 7745,
     medianHouseholdIncome: 181000,
     populationGrowthPct: 3.8,
-    consultingFirmCount: 9,
+    consultingFirmCount: 2,
     smbCount: 70,
     businessMaturityPct: 60,
     ownerAge55PlusPct: 17.8,
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Snoqualmie Pass gateway; outdoor tourism economy, premium outlet retail, zero consulting"
+    notes: "A small King County community near Snoqualmie Pass with high income ($181k) and a tourism/retail SMB base. Geographic character (gateway to the Cascades) shapes the business ecosystem — outdoor recreation, hospitality, and retail serve the pass traffic. Small market; part of a natural Highway 2 corridor territory."
   },
   {
     id: "snohomish",
@@ -1426,7 +1426,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Historic antique district; established retail/services SMBs, high maturity, light competition"
+    notes: "An antique district and small-town retail hub in Snohomish County with a 55+ population at 28% and income at $85k. The antique and specialty retail SMBs here often have lifestyle business character — owners who built businesses around personal collections or expertise. Succession for these businesses requires specialized buyer matching."
   },
   {
     id: "shelton",
@@ -1444,7 +1444,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Mason County seat; oyster/timber economy, mature SMBs, very limited consulting activity"
+    notes: "Mason County's county seat with a timber and oyster industry heritage transitioning to a rural retail and healthcare economy. Income at $74k is in the standard range. The timber industry's decline has created a generation of business owners whose industrial businesses need succession planning. Only 2 consulting firms."
   },
   {
     id: "port-townsend",
@@ -1462,7 +1462,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Victorian seaport; artisan/marine SMBs, very high 55+ ownership, near-zero consulting"
+    notes: "A Victorian seaport with an arts, maritime, and tourism economy. Age 55+ at 49.3% is the third-highest in the dataset — an extreme succession demographic. Income at $60k is in the value-conscious range, but the unique maritime and arts business ecosystem creates specialty exit advisory opportunities (boatbuilding businesses, gallery-hospitality combinations, maritime services companies) that command premium positioning."
   },
   {
     id: "sequim",
@@ -1480,7 +1480,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Retirement destination; lavender tourism, highest 55+ concentration, near-zero consulting"
+    notes: "A true retirement destination on the Olympic Peninsula's \"Banana Belt.\" Age 55+ at 50.6% is the second-highest in WA. Many business owners are retirees from other markets who established lifestyle businesses — wineries, lavender farms, boutique retail, professional services. Income at $53k is constrained, but Sequim is best approached as a satellite market within a broader Olympic Peninsula territory."
   },
   {
     id: "burlington",
@@ -1498,7 +1498,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Skagit County retail hub; outlet malls, wholesale/trade SMBs, minimal consulting"
+    notes: "Skagit Valley's retail hub adjacent to the Premium Outlets, with agricultural equipment, food processing, and retail SMBs. Only 4 consulting firms. Part of the natural Skagit County cluster with Mount Vernon and Anacortes. Agricultural transition dynamics create the primary advisory demand."
   },
   {
     id: "sedro-woolley",
@@ -1516,7 +1516,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Upper Skagit Valley; manufacturing/ag SMBs, mature business base, near-zero consulting"
+    notes: "Rural Skagit County with a timber heritage, industrial services, and agricultural support economy. Income at $82k is above the value-sensitive threshold. Part of a natural Skagit County territory with Mount Vernon and Burlington."
   },
   {
     id: "blaine",
@@ -1527,14 +1527,14 @@ const CITY_DATA = [
     population: 5982,
     medianHouseholdIncome: 82000,
     populationGrowthPct: 1.7,
-    consultingFirmCount: 5,
+    consultingFirmCount: 1,
     smbCount: 55,
     businessMaturityPct: 62,
     ownerAge55PlusPct: 33,
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Canadian border community; cross-border trade SMBs, zero consulting, unique M&A angle"
+    notes: "A US-Canada border community whose economy is heavily dependent on cross-border trade, duty-free retail, and marine services. Business owners here have complex Canada-US ownership and tax considerations that generalist advisors aren't equipped to handle. Minimal consulting competition makes this an opportunity for a specialist with cross-border transaction experience."
   },
   {
     id: "chelan",
@@ -1552,7 +1552,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Lake Chelan resort town; hospitality/winery SMBs with high maturity, no consulting presence"
+    notes: "Lake Chelan resort and wine country — a concentration of wineries, resort hospitality, and recreational marine businesses. Age 55+ at 32.5% is elevated; income at $72k is value-sensitive. Lifestyle business exits (wineries, resorts, marinas) require specialized buyer matching for qualified purchasers who want to acquire a lifestyle, not just an income stream."
   },
   {
     id: "leavenworth",
@@ -1570,7 +1570,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Bavarian-theme tourist town; high SMB density per capita, mature owners, zero consulting"
+    notes: "A Bavarian-themed tourist destination with a concentrated hospitality and retail SMB base. Tourism businesses have specific exit valuation challenges — revenue seasonality, brand-dependent goodwill, and lifestyle buyer profiles. Small market; best approached as part of a Chelan County territory anchored in Wenatchee."
   },
   {
     id: "cashmere",
@@ -1588,7 +1588,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Apple/candy manufacturing hub; established family businesses ripe for succession planning"
+    notes: "A small Chelan County apple-growing community with orchards, packing houses, and agricultural retail. Income at $64k and age 55+ at 30.7% create a specific agricultural succession advisory opportunity. Part of a Wenatchee-Chelan County territory."
   },
   {
     id: "ephrata",
@@ -1606,7 +1606,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Grant County seat; ag/government SMBs, high maturity, completely unserved by consultants"
+    notes: "Grant County's county seat with an agricultural economy — wheat, potatoes, and precision agriculture. Only 2 consulting firms. Income at $70k supports standard fees. Columbia Basin irrigation system has driven agricultural business formation for 70+ years; many of these businesses are now in second or third generation ownership."
   },
   {
     id: "quincy",
@@ -1624,7 +1624,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Data center boom town; Apple/Microsoft infra nearby, ag SMBs, no consulting footprint"
+    notes: "Grant County's fastest-growing city due to the data center boom — Microsoft, Sabey, and Dell are attracted by cheap Columbia Basin hydropower. The intersection of traditional agricultural succession and tech-sector facility management creates an unusual advisory landscape. Only 2 consulting firms for a city that now attracts significant capital investment."
   },
   {
     id: "othello",
@@ -1642,7 +1642,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Adams County ag hub; food processing/distribution SMBs, completely unserved market"
+    notes: "An Adams County agricultural community with potato processing, vegetable packing, and farm services. Income at $57k and very young demographics (9.1% age 55+) reflect the agricultural immigrant workforce. Advisory opportunity is long-term. The agricultural processing sector is consolidating nationally — strategic acquisition opportunities may arise independently of owner retirement."
   },
   {
     id: "toppenish",
@@ -1660,7 +1660,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Yakama Nation hub; murals/ag tourism, food processing SMBs, zero consulting competition"
+    notes: "A Yakima Valley agricultural community with the Yakama Nation's economic presence creating a distinctive dual business ecosystem. Income at $68k and a young demographic limit near-term advisory opportunity. The Yakama Nation tribal economy represents specialized advisory territory requiring specific expertise in tribal business law and succession."
   },
   {
     id: "grandview",
@@ -1678,7 +1678,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Lower Yakima Valley ag city; wine/produce SMBs, extremely underserved consulting market"
+    notes: "Yakima Valley's agricultural processing community with food packing, cold storage, and agricultural input businesses. Income at $60k and a very young demographic (12.2% age 55+) make this a long-term rather than near-term advisory market. Part of a Yakima Valley territory anchored in Yakima or Kennewick."
   },
   {
     id: "selah",
@@ -1696,7 +1696,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Yakima suburb; slightly higher income than valley peers, established SMB owners, 1 firm only"
+    notes: "A Yakima Valley community directly north of Yakima with fruit processing, retail, and healthcare services. Shares Yakima's advisory market dynamics. Income at $78k is close to WA median. Part of a Yakima-Selah combined territory."
   },
   {
     id: "prosser",
@@ -1714,7 +1714,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Horse Heaven Hills wine country; winery/ag SMBs, mature ownership, zero consulting"
+    notes: "Benton County wine country hub with wineries, agricultural services, and food processing. Income at $80k is near WA median. The wine industry's maturation is creating succession demand — winery founders who built brands in the 1990s-2000s are approaching retirement. Small market but part of a natural Tri-Cities wine country territory."
   },
   {
     id: "goldendale",
@@ -1732,7 +1732,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Klickitat County seat; wind energy/ag economy, very high owner maturity, no consulting"
+    notes: "Klickitat County seat with wind energy development, agriculture, and rural retail. Income at $42k is below the fee capacity floor. Wind energy companies are consolidating — land lease businesses and energy service companies represent advisory opportunities outside the traditional SMB definition."
   },
   {
     id: "white-salmon",
@@ -1750,7 +1750,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Columbia Gorge outdoor recreation hub; adventure tourism SMBs, no consulting competition"
+    notes: "A small Klickitat County community in the Columbia Gorge wine and outdoor recreation corridor. Income at $73k is adequate. Very small market — part of a broader Gorge territory."
   },
   {
     id: "chehalis",
@@ -1786,7 +1786,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Pacific coast resort; hospitality/retail SMBs, high 55+ ownership, zero consulting"
+    notes: "An extreme retirement destination on Grays Harbor's coast with the highest age 55+ (62.3%) in the dataset. Income at $63k limits fee capacity. The vacation home and lifestyle business economy creates specific advisory dynamics — owners of vacation rental businesses, coastal hospitality operations, and resort retail represent the primary advisory opportunity. Very small standalone market."
   },
   {
     id: "montesano",
@@ -1804,7 +1804,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Grays Harbor County seat; timber/ag SMBs, high maturity rate, completely unserved"
+    notes: "Grays Harbor county seat with government services, timber heritage, and retail. Income at $80k and minimal consulting competition. Part of a broader Grays Harbor territory anchored in Aberdeen."
   },
   {
     id: "omak",
@@ -1822,7 +1822,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Okanogan County commerce hub; rodeo/ag/timber SMBs, most populated Okanogan city"
+    notes: "Okanogan County's commercial hub with agriculture, timber, and outdoor recreation. Income at $62k is value-conscious. The Colville Indian Reservation's economic presence creates a distinctive advisory context — tribal and non-tribal business interrelations are common. Only 1 consulting firm."
   },
   {
     id: "colville",
@@ -1840,7 +1840,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Stevens County seat; timber/mining adjacent SMBs, completely isolated from consulting firms"
+    notes: "Stevens County seat in northeastern WA — timber, agriculture, and outdoor recreation. Income at $49k is below the fee capacity floor for standard advisory retainers. Genuine geographic isolation limits competition but also limits deal size. Best approached through regional timber industry association relationships for owners of established forest products businesses."
   },
   {
     id: "dayton",
@@ -1858,7 +1858,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Columbia County seat; oldest Washington city, very high business maturity, no consulting"
+    notes: "Columbia County seat — a very small market dominated by wheat farming and the growing Walla Walla wine region's eastern edge. Only 1 consulting firm. Wheat farm succession is the primary advisory opportunity — multigenerational family farm businesses often have complex ownership structures and land values that require professional guidance during transition."
   },
   {
     id: "raymond",
@@ -1876,7 +1876,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Pacific County timber hub; legacy SMBs with succession needs, completely unserved market"
+    notes: "Pacific County's commercial center with timber, fishing, and rural retail. Very small market ($62k income) with the Pacific County economy showing persistent contraction. Advisory opportunities limited to distressed exits and business closures rather than planned succession."
   },
   {
     id: "stevenson",
@@ -1894,7 +1894,7 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Columbia Gorge county seat; outdoor recreation SMBs, highest SMB density in Skamania County"
+    notes: "Skamania County seat in the Columbia River Gorge — a small community with outdoor recreation, tourism, and government services. Income at $78k is near WA median but the market is too small for standalone practice. The Columbia Gorge recreation economy (windsurfing, kiting, hiking tourism) creates niche hospitality business succession opportunities."
   },
   {
     id: "forks",
@@ -1912,6 +1912,6 @@ const CITY_DATA = [
     tier: 5,
     estimated: false,
     dataYear: 2023,
-    notes: "Olympic Peninsula timber hub; Twilight tourism boost, logging/services SMBs, no consulting"
+    notes: "A remote Olympic Peninsula community with a timber and tourism (Twilight franchise) economy. Economic challenges make advisory difficult — income at $46k is below the fee capacity floor for standard advisory retainers. Genuine geographic isolation limits competition but also limits deal size. Approach only as an ancillary stop within a comprehensive Olympic Peninsula territory."
   }
 ];

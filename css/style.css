@@ -643,6 +643,19 @@ html, body {
   margin-bottom: 14px;
 }
 
+/* Market Brief (rich notes card) */
+#p-notes-card {
+  background: rgba(16,185,129,.05);
+  border: 1px solid rgba(16,185,129,.2);
+  border-radius: var(--r-md); padding: 12px 14px;
+  margin-bottom: 4px;
+}
+.notes-line {
+  font-size: 12px; color: var(--text-2); line-height: 1.65;
+  margin: 0 0 8px 0;
+}
+.notes-line:last-child { margin-bottom: 0; }
+
 .dp-section-title {
   font-size: 10px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .08em;

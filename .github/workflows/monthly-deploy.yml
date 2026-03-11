@@ -1,27 +1,58 @@
-name: Monthly Redeploy
+name: Monthly Data Refresh & Deploy
+
 on:
   schedule:
-    - cron: '0 9 1 * *'
-  workflow_dispatch:
+    - cron: '0 9 1 * *'   # 1st of every month at 09:00 UTC
+  workflow_dispatch:        # allow manual trigger
+
 jobs:
-  deploy:
+  refresh-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # needed to push data.js commit
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Refresh data from Census API + CBP + BLS
+        run: node scripts/update-data.js
+
+      - name: Commit updated data.js
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add js/data.js
+          git diff --cached --quiet && echo "No data changes" || \
+            git commit -m "chore: monthly data refresh $(date +'%Y-%m')"
+
+      - name: Push changes
+        run: git push origin main
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
+
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
       - name: Build
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      - name: Deploy
+
+      - name: Deploy to Vercel Production
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

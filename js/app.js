@@ -463,11 +463,14 @@ function openDetailPanel(city) {
   scoreEl.textContent  = score.toFixed(0);
   scoreEl.style.color  = uiCol;
 
-  const labelEl = document.getElementById('p-label');
-  const labelSuffix = { 'Priority Target': '— Enter This Cycle', 'Strong Candidate': '— Plan Entry', 'Viable Secondary': '— Bundle With Primary', 'Monitor': '— Revisit in 2 Yrs', 'Pass': '— Insufficient Pipeline' };
+  const labelEl  = document.getElementById('p-label');
+  const actionEl = document.getElementById('p-action');
+  const labelSuffix = { 'Priority Target': 'Enter This Cycle', 'Strong Candidate': 'Plan Entry Now', 'Viable Secondary': 'Bundle With Primary', 'Monitor': 'Revisit in 2 Yrs', 'Pass': 'Insufficient Pipeline' };
   const lbl = getOpportunityLabel(score);
-  labelEl.textContent = lbl + ' ' + (labelSuffix[lbl] || '');
+  labelEl.textContent  = lbl;
   labelEl.style.color  = uiCol;
+  actionEl.textContent = labelSuffix[lbl] || '';
+  actionEl.style.color = uiCol;
 
   const tierEl = document.getElementById('p-tier');
   tierEl.textContent = getTierLabel(city.tier);

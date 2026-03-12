@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WA Market Intelligence — Consulting Expansion Heat Map</title>
-  <meta name="description" content="Interactive heat map of Washington State consulting expansion opportunities." />
+  <title>Washington State Market Intelligence — Consulting Expansion Opportunity Map</title>
+  <meta name="description" content="Interactive opportunity map scoring 100 Washington State cities across five criteria to identify underserved consulting expansion markets." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
 
   <!-- Fonts -->
@@ -18,184 +18,212 @@
 </head>
 <body>
 
+<!-- Skip navigation for keyboard/screen reader users -->
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <!-- Loading -->
-<div id="loading-overlay">
-  <div class="spinner"></div>
+<div id="loading-overlay" role="status" aria-live="polite">
+  <div class="spinner" aria-hidden="true"></div>
   <div class="loading-text">Loading market intelligence…</div>
 </div>
 
+<!-- Error fallback (shown if map fails to load) -->
+<div id="error-overlay" hidden>
+  <div class="error-box">
+    <div class="error-icon" aria-hidden="true">⚠️</div>
+    <h2>Unable to Load Map</h2>
+    <p>The visualization failed to initialize. This may be a temporary network issue.</p>
+    <p>The city rankings and analysis data are still available in the sidebar.</p>
+    <button onclick="document.getElementById('error-overlay').hidden=true" class="hd-btn">Dismiss</button>
+  </div>
+</div>
+
 <!-- ══ Header ════════════════════════════════════════════ -->
-<header id="header">
+<header id="header" role="banner">
   <div class="hd-brand">
-    <div class="hd-icon">📊</div>
+    <div class="hd-icon" aria-hidden="true">📊</div>
     <div>
-      <div class="hd-title">WA Market Intelligence</div>
-      <div class="hd-sub">Consulting Expansion Heat Map</div>
+      <h1 class="hd-title">Washington State Market Intelligence</h1>
+      <div class="hd-sub">Consulting Expansion Opportunity Map</div>
     </div>
   </div>
 
-  <div class="hd-stats">
+  <div class="hd-stats" role="region" aria-label="Summary statistics">
     <div class="hd-stat">
-      <div class="hd-stat-val" id="s-total">—</div>
+      <div class="hd-stat-val" id="s-total" aria-label="Cities scored">—</div>
       <div class="hd-stat-lbl">Cities Scored</div>
     </div>
-    <div class="hd-divider"></div>
+    <div class="hd-divider" aria-hidden="true"></div>
     <div class="hd-stat">
-      <div class="hd-stat-val" id="s-tier3">—</div>
-      <div class="hd-stat-lbl">Tier 3 Targets</div>
+      <div class="hd-stat-val" id="s-tier3" aria-label="Prime targets">—</div>
+      <div class="hd-stat-lbl">Prime Targets (Tier 3)</div>
     </div>
-    <div class="hd-divider"></div>
+    <div class="hd-divider" aria-hidden="true"></div>
     <div class="hd-stat">
-      <div class="hd-stat-val" id="s-top">—</div>
+      <div class="hd-stat-val" id="s-top" aria-label="Top market">—</div>
       <div class="hd-stat-lbl">Top Market</div>
     </div>
-    <div class="hd-divider"></div>
+    <div class="hd-divider" aria-hidden="true"></div>
     <div class="hd-stat">
-      <div class="hd-stat-val" id="s-score" style="color:#B91C1C">—</div>
+      <div class="hd-stat-val" id="s-score" style="color:#B91C1C" aria-label="Top opportunity score">—</div>
       <div class="hd-stat-lbl">Top Score</div>
     </div>
   </div>
 
-  <div class="hd-rotation">
-    <span class="hd-rot-label">↻ Bearing</span>
-    <button class="rot-step-btn" id="btn-bear-minus" title="−1°">−</button>
-    <input type="range" id="rotation-slider" min="-180" max="180" step="1" value="-10" />
-    <button class="rot-step-btn" id="btn-bear-plus" title="+1°">+</button>
-    <span class="hd-rot-val" id="rotation-val">-10°</span>
+  <div class="hd-rotation" role="group" aria-label="Map rotation">
+    <span class="hd-rot-label" aria-hidden="true">↻ Rotation</span>
+    <button class="rot-step-btn" id="btn-bear-minus" aria-label="Rotate map left 1 degree">−</button>
+    <input type="range" id="rotation-slider" min="-180" max="180" step="1" value="-10"
+      aria-label="Map rotation angle" aria-valuemin="-180" aria-valuemax="180" aria-valuenow="-10" />
+    <button class="rot-step-btn" id="btn-bear-plus" aria-label="Rotate map right 1 degree">+</button>
+    <span class="hd-rot-val" id="rotation-val" aria-live="polite">-10°</span>
   </div>
 
-  <div class="hd-actions">
-    <button class="hd-btn" id="btn-rotate">▶ Spin</button>
-    <button class="hd-btn" id="btn-weights">⚖️ Weights</button>
-    <button class="hd-btn" id="btn-export">⬇ Export CSV</button>
-    <button class="hd-btn" id="btn-sources">📋 Sources</button>
+  <div class="hd-actions" role="toolbar" aria-label="Map controls">
+    <button class="hd-btn" id="btn-rotate" aria-pressed="false">▶ Auto-Rotate</button>
+    <button class="hd-btn" id="btn-weights" aria-expanded="false" aria-controls="weights-panel">⚖️ Scoring Weights</button>
+    <button class="hd-btn" id="btn-export" aria-label="Export data as CSV file">⬇ Export CSV</button>
+    <button class="hd-btn" id="btn-sources" aria-haspopup="dialog">📋 Data Sources</button>
   </div>
 </header>
 
 <!-- ══ Weights panel ══════════════════════════════════════ -->
-<div id="weights-panel">
-  <div class="wp-title">Adjust Scoring Weights</div>
+<div id="weights-panel" role="dialog" aria-label="Adjust scoring weights" aria-modal="false">
+  <div class="wp-title" id="wp-title">Adjust Scoring Weights</div>
   <p class="wp-desc">Weights must sum to 100%. Use +/− or drag the slider.</p>
 
+  <div id="wp-pending" class="wp-pending hidden" aria-live="polite">⚠ Changes pending — click Recalculate to apply</div>
+
   <div class="weight-item">
     <div class="weight-header">
-      <span class="weight-label">🏢 Consulting Firm Absence</span>
-      <span class="weight-pct" id="wv-consultingAbsence">30%</span>
+      <label class="weight-label" for="w-consultingAbsence">🏢 Low Consulting Competition</label>
+      <span class="weight-pct" id="wv-consultingAbsence" aria-live="polite">30%</span>
     </div>
     <div class="weight-row">
-      <button class="w-btn" data-key="consultingAbsence" data-delta="-1">−</button>
-      <input type="range" class="weight-slider" id="w-consultingAbsence" min="5" max="60" step="1" />
-      <button class="w-btn" data-key="consultingAbsence" data-delta="1">+</button>
+      <button class="w-btn" data-key="consultingAbsence" data-delta="-1" aria-label="Decrease Low Consulting Competition weight">−</button>
+      <input type="range" class="weight-slider" id="w-consultingAbsence" min="5" max="60" step="1"
+        aria-label="Low Consulting Competition weight" aria-valuemin="5" aria-valuemax="60" />
+      <button class="w-btn" data-key="consultingAbsence" data-delta="1" aria-label="Increase Low Consulting Competition weight">+</button>
     </div>
   </div>
 
   <div class="weight-item">
     <div class="weight-header">
-      <span class="weight-label">🏬 Target Business Abundance</span>
-      <span class="weight-pct" id="wv-businessAbundance">25%</span>
+      <label class="weight-label" for="w-businessAbundance">🏬 SMB Density — Target Sectors</label>
+      <span class="weight-pct" id="wv-businessAbundance" aria-live="polite">25%</span>
     </div>
     <div class="weight-row">
-      <button class="w-btn" data-key="businessAbundance" data-delta="-1">−</button>
-      <input type="range" class="weight-slider" id="w-businessAbundance" min="5" max="50" step="1" />
-      <button class="w-btn" data-key="businessAbundance" data-delta="1">+</button>
+      <button class="w-btn" data-key="businessAbundance" data-delta="-1" aria-label="Decrease SMB Density weight">−</button>
+      <input type="range" class="weight-slider" id="w-businessAbundance" min="5" max="50" step="1"
+        aria-label="SMB Density weight" aria-valuemin="5" aria-valuemax="50" />
+      <button class="w-btn" data-key="businessAbundance" data-delta="1" aria-label="Increase SMB Density weight">+</button>
     </div>
   </div>
 
   <div class="weight-item">
     <div class="weight-header">
-      <span class="weight-label">🏙️ City Tier Classification</span>
-      <span class="weight-pct" id="wv-cityTier">20%</span>
+      <label class="weight-label" for="w-cityTier">🏙️ City Size &amp; Economic Profile</label>
+      <span class="weight-pct" id="wv-cityTier" aria-live="polite">20%</span>
     </div>
     <div class="weight-row">
-      <button class="w-btn" data-key="cityTier" data-delta="-1">−</button>
-      <input type="range" class="weight-slider" id="w-cityTier" min="5" max="50" step="1" />
-      <button class="w-btn" data-key="cityTier" data-delta="1">+</button>
+      <button class="w-btn" data-key="cityTier" data-delta="-1" aria-label="Decrease City Size weight">−</button>
+      <input type="range" class="weight-slider" id="w-cityTier" min="5" max="50" step="1"
+        aria-label="City Size and Economic Profile weight" aria-valuemin="5" aria-valuemax="50" />
+      <button class="w-btn" data-key="cityTier" data-delta="1" aria-label="Increase City Size weight">+</button>
     </div>
   </div>
 
   <div class="weight-item">
     <div class="weight-header">
-      <span class="weight-label">📅 Business Maturity (3+ yrs)</span>
-      <span class="weight-pct" id="wv-businessMaturity">15%</span>
+      <label class="weight-label" for="w-businessMaturity">📅 Established Businesses (3+ Years)</label>
+      <span class="weight-pct" id="wv-businessMaturity" aria-live="polite">15%</span>
     </div>
     <div class="weight-row">
-      <button class="w-btn" data-key="businessMaturity" data-delta="-1">−</button>
-      <input type="range" class="weight-slider" id="w-businessMaturity" min="5" max="40" step="1" />
-      <button class="w-btn" data-key="businessMaturity" data-delta="1">+</button>
+      <button class="w-btn" data-key="businessMaturity" data-delta="-1" aria-label="Decrease Established Businesses weight">−</button>
+      <input type="range" class="weight-slider" id="w-businessMaturity" min="5" max="40" step="1"
+        aria-label="Established Businesses weight" aria-valuemin="5" aria-valuemax="40" />
+      <button class="w-btn" data-key="businessMaturity" data-delta="1" aria-label="Increase Established Businesses weight">+</button>
     </div>
   </div>
 
   <div class="weight-item">
     <div class="weight-header">
-      <span class="weight-label">👴 Owner Demographics (55+)</span>
-      <span class="weight-pct" id="wv-ownerDemographics">10%</span>
+      <label class="weight-label" for="w-ownerDemographics">👴 Succession-Ready Owners (Age 55+)</label>
+      <span class="weight-pct" id="wv-ownerDemographics" aria-live="polite">10%</span>
     </div>
     <div class="weight-row">
-      <button class="w-btn" data-key="ownerDemographics" data-delta="-1">−</button>
-      <input type="range" class="weight-slider" id="w-ownerDemographics" min="5" max="40" step="1" />
-      <button class="w-btn" data-key="ownerDemographics" data-delta="1">+</button>
+      <button class="w-btn" data-key="ownerDemographics" data-delta="-1" aria-label="Decrease Succession-Ready Owners weight">−</button>
+      <input type="range" class="weight-slider" id="w-ownerDemographics" min="5" max="40" step="1"
+        aria-label="Succession-Ready Owners weight" aria-valuemin="5" aria-valuemax="40" />
+      <button class="w-btn" data-key="ownerDemographics" data-delta="1" aria-label="Increase Succession-Ready Owners weight">+</button>
     </div>
   </div>
 
-  <div class="weight-total valid" id="weight-total">Total: 100%</div>
+  <div class="weight-total valid" id="weight-total" aria-live="polite">Total: 100%</div>
   <div class="wp-actions">
-    <button class="wp-btn-secondary" id="btn-reset-weights">Reset</button>
-    <button class="wp-btn-primary" id="btn-apply-weights">Apply & Recalculate</button>
+    <button class="wp-btn-secondary" id="btn-reset-weights">Reset to Defaults</button>
+    <button class="wp-btn-primary" id="btn-apply-weights">Recalculate</button>
   </div>
 </div>
 
 <!-- ══ Layout ════════════════════════════════════════════ -->
+<main id="main-content">
 <div id="layout">
 
   <!-- Sidebar -->
-  <aside id="sidebar">
+  <aside id="sidebar" aria-label="City rankings">
     <div class="sb-header">
       <div class="sb-title-row">
-        <span class="sb-title">Rankings</span>
-        <span class="sb-count" id="list-count">— cities</span>
+        <h2 class="sb-title">City Rankings</h2>
+        <span class="sb-count" id="list-count" aria-live="polite" aria-atomic="true">— cities</span>
       </div>
       <div class="sb-search-wrap">
-        <span class="sb-search-icon">🔍</span>
-        <input id="city-search" type="text" placeholder="Search city or county…" />
+        <label for="city-search" class="sr-only">Search cities</label>
+        <span class="sb-search-icon" aria-hidden="true">🔍</span>
+        <input id="city-search" type="text" placeholder="Search city or county…" aria-label="Search city or county" />
       </div>
-      <div class="tier-pills">
-        <button class="tier-pill active" data-tier="all">All</button>
-        <button class="tier-pill" data-tier="3">Tier 3 ●</button>
-        <button class="tier-pill" data-tier="4">Tier 4 ●</button>
-        <button class="tier-pill" data-tier="2">Tier 2 ●</button>
-        <button class="tier-pill" data-tier="5">Tier 5 ●</button>
-      </div>
+      <nav aria-label="Filter by tier">
+        <div class="tier-pills" role="group" aria-label="Tier filter">
+          <button class="tier-pill active" data-tier="all" aria-pressed="true">All</button>
+          <button class="tier-pill" data-tier="1" aria-pressed="false" title="Saturated Market — Major hubs with dense competition">T1 · Saturated</button>
+          <button class="tier-pill" data-tier="2" aria-pressed="false" title="High Competition — Secondary metros">T2 · Competitive</button>
+          <button class="tier-pill" data-tier="3" aria-pressed="false" title="Prime Opportunity — Mid-markets, optimal target zone">T3 · Prime ●</button>
+          <button class="tier-pill" data-tier="4" aria-pressed="false" title="Emerging Market — Smaller cities with growth potential">T4 · Emerging</button>
+          <button class="tier-pill" data-tier="5" aria-pressed="false" title="Micro Market — Limited SMB pipeline">T5 · Micro</button>
+        </div>
+      </nav>
     </div>
 
-    <div id="city-list"></div>
+    <div id="city-list" role="list" aria-label="City list"></div>
 
     <div class="sb-footer">
-      <span>Data vintage: ACS 2023 / CBP 2022</span>
+      <span>Data as of: ACS 2023 / CBP 2022 / BLS BED</span>
     </div>
   </aside>
 
   <!-- Map -->
-  <div id="map-wrap">
-    <div id="map"></div>
+  <div id="map-wrap" aria-label="Interactive 3D opportunity map of Washington State" role="img">
+    <div id="map" aria-hidden="true"></div>
 
     <!-- Map controls -->
     <div class="map-ctrl">
-      <button class="map-ctrl-btn" id="btn-reset-view" title="Reset view">⌖</button>
+      <button class="map-ctrl-btn" id="btn-reset-view" title="Reset map to default view" aria-label="Reset map view">⌖</button>
     </div>
 
     <!-- Zoom slider -->
-    <div id="zoom-ctrl">
-      <button class="map-ctrl-btn" id="btn-zoom-in" title="Zoom in">+</button>
+    <div id="zoom-ctrl" role="group" aria-label="Map zoom">
+      <button class="map-ctrl-btn" id="btn-zoom-in" aria-label="Zoom in">+</button>
       <div class="zoom-slider-wrap">
-        <input type="range" id="zoom-slider" min="59" max="130" step="1" value="59" title="Zoom" />
+        <input type="range" id="zoom-slider" min="59" max="130" step="1" value="59"
+          aria-label="Map zoom level" aria-valuemin="59" aria-valuemax="130" />
       </div>
-      <button class="map-ctrl-btn" id="btn-zoom-out" title="Zoom out">−</button>
+      <button class="map-ctrl-btn" id="btn-zoom-out" aria-label="Zoom out">−</button>
     </div>
 
     <!-- Legend -->
-    <div id="legend">
+    <div id="legend" role="note" aria-label="Map legend">
       <div class="legend-title">Opportunity Score</div>
-      <div class="legend-spike-demo">
+      <div class="legend-spike-demo" aria-hidden="true">
         <div class="lsd-col">
           <div class="lsd-bar high"></div>
           <span class="lsd-label">High</span>
@@ -213,33 +241,41 @@
         Taller + redder = more opportunity
       </div>
       <div class="legend-divider"></div>
+      <div class="legend-tier-note">Tier 3 = prime target (mid-markets)</div>
       <div class="legend-tiers">
-        <div class="lt-row"><span class="lt-dot" style="background:#10b981"></span>Tier 3 Optimal</div>
-        <div class="lt-row"><span class="lt-dot" style="background:#eab308"></span>Tier 4 Viable</div>
-        <div class="lt-row"><span class="lt-dot" style="background:#f97316"></span>Tier 2 Competitive</div>
-        <div class="lt-row"><span class="lt-dot" style="background:#ef4444"></span>Tier 1 Avoid</div>
-        <div class="lt-row"><span class="lt-dot" style="background:#94a3b8"></span>Tier 5 Micro</div>
+        <div class="lt-row"><span class="lt-dot" style="background:#10b981" aria-hidden="true"></span>Tier 3 · Prime Opportunity</div>
+        <div class="lt-row"><span class="lt-dot" style="background:#eab308" aria-hidden="true"></span>Tier 4 · Emerging Market</div>
+        <div class="lt-row"><span class="lt-dot" style="background:#f97316" aria-hidden="true"></span>Tier 2 · High Competition</div>
+        <div class="lt-row"><span class="lt-dot" style="background:#ef4444" aria-hidden="true"></span>Tier 1 · Saturated Market</div>
+        <div class="lt-row"><span class="lt-dot" style="background:#94a3b8" aria-hidden="true"></span>Tier 5 · Micro Market</div>
       </div>
     </div>
   </div>
 </div>
+</main>
 
 <!-- ══ Detail Panel ═══════════════════════════════════════ -->
-<div id="detail-panel">
+<div id="detail-panel" role="region" aria-label="City analysis" aria-live="polite">
   <div class="dp-header">
     <span class="dp-header-label">City Analysis</span>
-    <button class="dp-close" id="panel-close">✕</button>
+    <button class="dp-close" id="panel-close" aria-label="Close city analysis">✕</button>
   </div>
   <div class="dp-body">
 
+    <!-- Empty state -->
+    <div class="dp-empty" id="dp-empty">
+      <div class="dp-empty-icon" aria-hidden="true">🗺️</div>
+      <p>Select a city from the map or rankings to view its full analysis.</p>
+    </div>
+
     <!-- Score hero -->
-    <div class="dp-hero">
+    <div class="dp-hero" id="dp-hero" hidden>
       <div class="dp-hero-left">
         <div class="dp-name" id="p-name">—</div>
         <div class="dp-county" id="p-county">—</div>
         <div class="dp-rank" id="p-rank">—</div>
         <div id="p-tier" style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:6px">—</div>
-        <div class="dp-estimated hidden" id="p-estimated">⚠ Some data estimated</div>
+        <div class="dp-estimated hidden" id="p-estimated">⚠ Some city-level values are estimated from county data</div>
       </div>
       <div class="dp-hero-right">
         <div class="dp-score" id="p-score">—</div>
@@ -251,69 +287,86 @@
     <div class="dp-notes" id="p-notes"></div>
 
     <!-- Market Brief -->
-    <div class="dp-section-title" id="p-notes-title" style="display:none">Market Brief</div>
+    <h3 class="dp-section-title" id="p-notes-title" style="display:none">Market Brief</h3>
     <div id="p-notes-card" style="display:none"></div>
 
     <!-- Expansion Insights -->
-    <div class="dp-section-title">Expansion Insights</div>
+    <h3 class="dp-section-title">Expansion Insights</h3>
     <div id="p-insights"></div>
 
     <!-- Score breakdown -->
-    <div class="dp-section-title">Score Breakdown</div>
+    <h3 class="dp-section-title">Score Breakdown</h3>
     <div id="p-breakdown"></div>
 
     <!-- Metrics grid -->
-    <div class="dp-section-title">Key Metrics</div>
+    <h3 class="dp-section-title">Key Metrics</h3>
     <div class="dp-grid" id="p-metrics"></div>
 
     <div class="dp-methodology">
-      <strong>Methodology:</strong> 5 weighted criteria normalized 0–100 across WA city dataset.
-      Adjust weights via the ⚖️ button. Data: Census ACS 2023, CBP 2022, BLS BED.
+      <strong>Methodology:</strong> 5 weighted criteria normalized 0–100 across the WA city dataset.
+      Adjust weights via the ⚖️ Scoring Weights button. Sources: U.S. Census Bureau ACS (2023),
+      County Business Patterns CBP (2022), BLS Business Employment Dynamics.
     </div>
   </div>
 </div>
 
 <!-- Mobile toggle -->
-<button id="sidebar-toggle">☰ Rankings</button>
+<button id="sidebar-toggle" aria-label="Toggle city rankings sidebar">☰ Rankings</button>
 
 <!-- ══ Sources Modal ══════════════════════════════════════ -->
-<div class="modal-overlay" id="sources-modal">
+<div class="modal-overlay" id="sources-modal" role="dialog" aria-modal="true" aria-labelledby="sources-modal-title">
   <div class="modal">
     <div class="modal-hd">
-      <h3>Data Sources &amp; Methodology</h3>
-      <button class="dp-close" id="btn-close-sources">✕</button>
+      <h2 id="sources-modal-title">Data Sources &amp; Methodology</h2>
+      <button class="dp-close" id="btn-close-sources" aria-label="Close data sources">✕</button>
     </div>
     <div class="modal-body">
       <p class="modal-intro">
-        All data sourced from U.S. federal public APIs or Washington Secretary of State registry.
-        County-level data apportioned by city employment share where city-level unavailable.
-        Cells marked <em>estimated</em> should be refreshed before investment decisions.
+        All data sourced from U.S. federal public APIs. Some city-level values are estimated from
+        county-level data apportioned by city employment share — these cells are marked <em>estimated</em>
+        and should be verified before investment decisions.
       </p>
-      <table class="src-table">
-        <thead><tr><th>Metric</th><th>Source</th><th>Update Frequency</th></tr></thead>
+      <table class="src-table" aria-label="Data sources">
+        <thead><tr><th scope="col">Metric</th><th scope="col">Source</th><th scope="col">Update Frequency</th></tr></thead>
         <tbody id="sources-tbody"></tbody>
       </table>
       <div class="modal-box blue">
         <strong>SMB Definition (Industry Standard for Exit / M&amp;A Advisory)</strong><br/>
-        Employees 5–249 · Revenue proxy $500K–$50M · Sectors: manufacturing, wholesale, retail,
-        food service, healthcare, professional services, construction, logistics (NAICS 23, 31–33,
-        42, 44–45, 48–49, 62, 72).
+        Employees 5–249 · Estimated Revenue $500K–$50M · Target Sectors: manufacturing, wholesale, retail,
+        food service, healthcare, professional services, construction, logistics
+        (NAICS 23, 31–33, 42, 44–45, 48–49, 54, 62, 72).
       </div>
       <div class="modal-box green">
-        <strong>Tier 3 Target Zone Rationale</strong><br/>
-        Equal weighting of population size, median household income, and 2020–2023 growth rate
-        (all normalized 0–100). Tier 3 mid-markets (30k–59k pop) are large enough for consistent
-        SMB pipeline, small enough to be underserved by national consulting competitors.
+        <strong>Tier Classification System</strong><br/>
+        Cities are classified into 5 tiers by population size (ACS 2023). <strong>Note: Tier 3 = prime target
+        zone</strong> (mid-markets 30k–59k population). Tier 1 = major hubs (100k+) — oversaturated with
+        national consulting firms. Tier 3 mid-markets are large enough for consistent SMB pipeline,
+        small enough to be underserved by national competitors.
+        <br/><br/>
+        <strong>Tier Guide:</strong> Tier 1 (100k+) · Tier 2 (60k–99k) · Tier 3 (30k–59k) · Tier 4 (15k–29k) · Tier 5 (&lt;15k)
+      </div>
+      <div class="modal-box gray">
+        <strong>Consulting Firm Count Methodology</strong><br/>
+        Counts all NAICS 5416 (Management, Scientific, and Technical Consulting Services) establishments
+        per county from CBP 2022, apportioned to cities by population share with urban density adjustment.
+        Approximately 20% of NAICS 5416 firms offer M&amp;A or exit-advisory services specifically.
+      </div>
+      <div class="modal-box gray">
+        <strong>How to Use This Tool</strong><br/>
+        1. Explore the map — taller and redder columns = higher opportunity<br/>
+        2. Click any city column or ranking to view full analysis<br/>
+        3. Use the ⚖️ Scoring Weights button to adjust criteria emphasis<br/>
+        4. Filter by tier using the sidebar buttons<br/>
+        5. Export data via ⬇ Export CSV for further analysis
       </div>
     </div>
   </div>
 </div>
 
-<!-- Scripts -->
-<script src="js/data.js"></script>
-<script src="js/scoring.js"></script>
-<script src="js/app.js"></script>
-<!-- deck.gl must follow app.js but precede DOMContentLoaded execution -->
-<script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
+<!-- Scripts (defer = execute in order after DOM parse, before DOMContentLoaded) -->
+<script src="js/data.js" defer></script>
+<script src="js/scoring.js" defer></script>
+<script src="js/app.js" defer></script>
+<script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js" defer></script>
 </body>
 </html>

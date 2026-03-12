@@ -272,10 +272,20 @@ function toggleRotation() {
   const btn = document.getElementById('btn-rotate');
   if (_rotating) {
     btn.textContent = '⏹ Stop';
+    btn.setAttribute('aria-pressed', 'true');
     btn.classList.add('active');
+    // Respect prefers-reduced-motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      _rotating = false;
+      btn.textContent = '▶ Auto-Rotate';
+      btn.setAttribute('aria-pressed', 'false');
+      btn.classList.remove('active');
+      return;
+    }
     animateRotation();
   } else {
-    btn.textContent = '▶ Spin';
+    btn.textContent = '▶ Auto-Rotate';
+    btn.setAttribute('aria-pressed', 'false');
     btn.classList.remove('active');
     if (_rotateRAF) { cancelAnimationFrame(_rotateRAF); _rotateRAF = null; }
   }
@@ -438,6 +448,8 @@ function generateInsights(city, scoredCities) {
 // ── Detail panel ───────────────────────────────────────────
 function openDetailPanel(city) {
   document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('dp-empty').hidden = true;
+  document.getElementById('dp-hero').hidden = false;
   const score  = city.opportunityScore;
   const uiCol  = scoreToUIColor(score);
   const tCol   = getTierColor(city.tier);
@@ -494,11 +506,11 @@ function openDetailPanel(city) {
 
   // Score breakdown bars
   const breakdown = [
-    { key: 'consultingAbsence', label: 'Consulting Absence',   weight: state.weights.consultingAbsence },
-    { key: 'businessAbundance', label: 'Business Abundance',   weight: state.weights.businessAbundance },
-    { key: 'cityTier',          label: 'City Tier',            weight: state.weights.cityTier },
-    { key: 'businessMaturity',  label: 'Business Maturity',    weight: state.weights.businessMaturity },
-    { key: 'ownerDemographics', label: 'Owner Demographics',   weight: state.weights.ownerDemographics }
+    { key: 'consultingAbsence', label: 'Low Competition',      weight: state.weights.consultingAbsence },
+    { key: 'businessAbundance', label: 'SMB Density',          weight: state.weights.businessAbundance },
+    { key: 'cityTier',          label: 'City Size & Profile',  weight: state.weights.cityTier },
+    { key: 'businessMaturity',  label: 'Established Biz',      weight: state.weights.businessMaturity },
+    { key: 'ownerDemographics', label: 'Succession Urgency',   weight: state.weights.ownerDemographics }
   ];
 
   document.getElementById('p-breakdown').innerHTML = breakdown.map(b => {
@@ -539,6 +551,8 @@ function openDetailPanel(city) {
 
 function closeDetailPanel() {
   document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('dp-empty').hidden = false;
+  document.getElementById('dp-hero').hidden = true;
   state.selectedCity = null;
   document.querySelectorAll('.city-item').forEach(el => el.classList.remove('active'));
   updateLayers();
@@ -652,6 +666,9 @@ function rebalanceWeights(changedKey) {
   }
 
   checkWeightTotal();
+  // Show "changes pending" indicator
+  const pending = document.getElementById('wp-pending');
+  if (pending) pending.classList.remove('hidden');
 }
 
 // ── Sliders (+/- buttons + range) ─────────────────────────
@@ -716,8 +733,12 @@ function bindEvents() {
 
   document.querySelectorAll('.tier-pill').forEach(p =>
     p.addEventListener('click', () => {
-      document.querySelectorAll('.tier-pill').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tier-pill').forEach(x => {
+        x.classList.remove('active');
+        x.setAttribute('aria-pressed', 'false');
+      });
       p.classList.add('active');
+      p.setAttribute('aria-pressed', 'true');
       renderSidebar();
     }));
 
@@ -727,13 +748,15 @@ function bindEvents() {
   const wBtn   = document.getElementById('btn-weights');
   const wPanel = document.getElementById('weights-panel');
   wBtn.addEventListener('click', () => {
-    wPanel.classList.toggle('open');
+    const isOpen = wPanel.classList.toggle('open');
     wBtn.classList.toggle('active');
+    wBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
   document.addEventListener('click', e => {
     if (wPanel.classList.contains('open') && !wPanel.contains(e.target) && !wBtn.contains(e.target)) {
       wPanel.classList.remove('open');
       wBtn.classList.remove('active');
+      wBtn.setAttribute('aria-expanded', 'false');
     }
   });
 
@@ -741,10 +764,15 @@ function bindEvents() {
     computeAndRender();
     wPanel.classList.remove('open');
     wBtn.classList.remove('active');
+    wBtn.setAttribute('aria-expanded', 'false');
+    const pending = document.getElementById('wp-pending');
+    if (pending) pending.classList.add('hidden');
   });
   document.getElementById('btn-reset-weights').addEventListener('click', () => {
     resetWeights();
     computeAndRender();
+    const pending = document.getElementById('wp-pending');
+    if (pending) pending.classList.add('hidden');
   });
 
   // Export CSV
@@ -846,16 +874,28 @@ function exportCSV() {
 
 // ── Bootstrap ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  initMap();
+  try {
+    initMap();
+  } catch (err) {
+    console.error('Map initialization failed:', err);
+    const errOverlay = document.getElementById('error-overlay');
+    if (errOverlay) errOverlay.hidden = false;
+  }
   try {
     await loadWAData();
   } catch (err) {
     console.warn('Map boundary data failed:', err);
   }
-  computeAndRender();
-  bindEvents();
-  initSliders();
-  renderSourcesTable();
+  try {
+    computeAndRender();
+    bindEvents();
+    initSliders();
+    renderSourcesTable();
+  } catch (err) {
+    console.error('App initialization failed:', err);
+    const errOverlay = document.getElementById('error-overlay');
+    if (errOverlay) errOverlay.hidden = false;
+  }
   setTimeout(() => {
     document.getElementById('loading-overlay').classList.add('hidden');
   }, 900);

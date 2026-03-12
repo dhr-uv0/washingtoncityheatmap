@@ -252,10 +252,10 @@ function getScoreColor(score) {
  */
 function getTierLabel(tier) {
   const labels = {
-    1: "Tier 1 — Oversaturated",
+    1: "Tier 1 — Saturated Market",
     2: "Tier 2 — High Competition",
-    3: "Tier 3 — Optimal Target",
-    4: "Tier 4 — Smaller Market",
+    3: "Tier 3 — Prime Opportunity",
+    4: "Tier 4 — Emerging Market",
     5: "Tier 5 — Micro Market"
   };
   return labels[tier] || "Unknown";

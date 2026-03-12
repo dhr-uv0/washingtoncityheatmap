@@ -364,10 +364,11 @@
   </div>
 </div>
 
-<!-- Scripts (defer = execute in order after DOM parse, before DOMContentLoaded) -->
-<script src="js/data.js" defer></script>
-<script src="js/scoring.js" defer></script>
-<script src="js/app.js" defer></script>
-<script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js" defer></script>
+<!-- Scripts -->
+<script src="js/data.js"></script>
+<script src="js/scoring.js"></script>
+<script src="js/app.js"></script>
+<!-- deck.gl must follow app.js but precede DOMContentLoaded execution -->
+<script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
 </body>
 </html>

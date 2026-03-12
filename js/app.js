@@ -579,15 +579,15 @@ function renderSidebar() {
     const tColor   = getTierColor(city.tier);
     const active   = state.selectedCity === city.id;
     return `
-      <div class="city-item${active ? ' active' : ''}" data-id="${city.id}" onclick="selectCity(this.dataset.id)">
+      <div class="city-item${active ? ' active' : ''}" data-id="${city.id}" role="listitem" tabindex="0">
         <div class="city-rank${city.rank <= 5 ? ' top' : ''}">${city.rank}</div>
-        <div class="city-swatch" style="background:${mapColor}"></div>
+        <div class="city-swatch" style="background:${mapColor}" aria-hidden="true"></div>
         <div class="city-info">
           <div class="city-name">${city.name}</div>
           <div class="city-sub">${fmt.num(city.population)} · ${fmt.usd(city.medianHouseholdIncome)}</div>
         </div>
-        <div class="city-badge" style="color:${uiColor};border-color:${uiColor}">${score.toFixed(0)}</div>
-        <div class="city-tier-dot" style="background:${tColor}" title="${getTierLabel(city.tier)}"></div>
+        <div class="city-badge" style="color:${uiColor};border-color:${uiColor}" aria-label="Score: ${score.toFixed(0)}">${score.toFixed(0)}</div>
+        <div class="city-tier-dot" style="background:${tColor}" title="${getTierLabel(city.tier)}" aria-hidden="true"></div>
       </div>`;
   }).join('');
 }
@@ -729,6 +729,19 @@ function renderSourcesTable() {
 
 // ── Event binding ──────────────────────────────────────────
 function bindEvents() {
+  // City list — event delegation (more reliable than inline onclick with defer/CSP)
+  const cityList = document.getElementById('city-list');
+  cityList.addEventListener('click', e => {
+    const item = e.target.closest('.city-item');
+    if (item) selectCity(item.dataset.id);
+  });
+  cityList.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const item = e.target.closest('.city-item');
+      if (item) { e.preventDefault(); selectCity(item.dataset.id); }
+    }
+  });
+
   document.getElementById('city-search').addEventListener('input', renderSidebar);
 
   document.querySelectorAll('.tier-pill').forEach(p =>

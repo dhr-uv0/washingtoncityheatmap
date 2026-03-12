@@ -902,11 +902,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.warn('Map boundary data failed:', err);
   }
+  bindEvents();
+  initSliders();
+  renderSourcesTable();
   try {
     computeAndRender();
-    bindEvents();
-    initSliders();
-    renderSourcesTable();
   } catch (err) {
     console.error('App initialization failed:', err);
     const errOverlay = document.getElementById('error-overlay');

@@ -70,6 +70,21 @@
     </div>
   </div>
 
+  <div class="hd-industry" role="group" aria-label="Target industry">
+    <label for="industry-select" class="hd-industry-label">🏭 Industry</label>
+    <select id="industry-select" class="hd-industry-select" aria-label="Select target industry to analyze competition for">
+      <option value="consulting">M&amp;A / Exit Advisory (NAICS 5416)</option>
+      <option value="professional">Professional Services (NAICS 54)</option>
+      <option value="mfg">Manufacturing (NAICS 31-33)</option>
+      <option value="retail">Retail Trade (NAICS 44-45)</option>
+      <option value="transport">Transportation &amp; Logistics (NAICS 48-49)</option>
+      <option value="construction">Construction (NAICS 23)</option>
+      <option value="wholesale">Wholesale Trade (NAICS 42)</option>
+      <option value="healthcare">Healthcare (NAICS 62)</option>
+      <option value="food">Food Service &amp; Hospitality (NAICS 72)</option>
+    </select>
+  </div>
+
   <div class="hd-rotation" role="group" aria-label="Map rotation">
     <span class="hd-rot-label" aria-hidden="true">↻ Rotation</span>
     <button class="rot-step-btn" id="btn-bear-minus" aria-label="Rotate map left 1 degree">−</button>
@@ -82,6 +97,7 @@
   <div class="hd-actions" role="toolbar" aria-label="Map controls">
     <button class="hd-btn" id="btn-rotate" aria-pressed="false">▶ Auto-Rotate</button>
     <button class="hd-btn" id="btn-weights" aria-expanded="false" aria-controls="weights-panel">⚖️ Scoring Weights</button>
+    <button class="hd-btn hd-btn-howto" id="btn-howto" aria-haspopup="dialog">❓ How It Works</button>
     <button class="hd-btn" id="btn-export" aria-label="Export data as CSV file">⬇ Export CSV</button>
     <button class="hd-btn" id="btn-sources" aria-haspopup="dialog">📋 Data Sources</button>
   </div>
@@ -360,6 +376,115 @@
         4. Filter by tier using the sidebar buttons<br/>
         5. Export data via ⬇ Export CSV for further analysis
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ How It Works Modal ══════════════════════════════════ -->
+<div class="modal-overlay" id="howto-modal" role="dialog" aria-modal="true" aria-labelledby="howto-modal-title">
+  <div class="modal">
+    <div class="modal-hd">
+      <h2 id="howto-modal-title">How It Works</h2>
+      <button class="dp-close" id="btn-close-howto" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-box blue">
+        <strong>Quick Start</strong><br/>
+        1. Explore the map — taller &amp; redder columns = higher opportunity score<br/>
+        2. Click any city column <em>or</em> a row in the sidebar to open its full analysis<br/>
+        3. Drag to pan · scroll to zoom · right-click drag to rotate<br/>
+        4. Use ⚖️ Scoring Weights to emphasize the criteria that matter most to you<br/>
+        5. Filter the sidebar by tier, or search by city / county name
+      </div>
+
+      <h3 class="howto-section-title">What Are the Rankings Based On?</h3>
+      <p class="howto-desc">Each city receives a 0–100 Opportunity Score built from five weighted criteria. The score identifies underserved markets where a consulting or advisory practice can enter with minimal competition and a strong pipeline of potential clients.</p>
+      <table class="src-table howto-table">
+        <thead>
+          <tr><th scope="col">Criterion</th><th scope="col">What It Measures</th><th scope="col">Default Weight</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🏢 Low Competition</strong></td>
+            <td>Fewer consulting firms in the city = higher score. Avoids oversaturated markets with compressed margins and high client acquisition cost.</td>
+            <td><span class="update-freq">30%</span></td>
+          </tr>
+          <tr>
+            <td><strong>🏬 SMB Density</strong></td>
+            <td>Target-sector small businesses (5–249 employees) per 1,000 residents. Higher density = larger addressable pipeline for advisory mandates.</td>
+            <td><span class="update-freq">25%</span></td>
+          </tr>
+          <tr>
+            <td><strong>🏙️ City Size &amp; Profile</strong></td>
+            <td>Mid-sized cities (Tier 3, 30k–59k pop) score highest — large enough for quality engagements, small enough to be underserved by national firms.</td>
+            <td><span class="update-freq">20%</span></td>
+          </tr>
+          <tr>
+            <td><strong>📅 Business Maturity</strong></td>
+            <td>% of businesses older than 3 years. Established owners have survived startup risk and are actively considering exit or succession timelines.</td>
+            <td><span class="update-freq">15%</span></td>
+          </tr>
+          <tr>
+            <td><strong>👴 Succession Urgency</strong></td>
+            <td>% of population aged 55+, used as a proxy for Baby Boomer owner retirement readiness. Higher % = more owners entering their exit-planning window now.</td>
+            <td><span class="update-freq">10%</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="howto-section-title">How Do I Adjust the Scoring Weights?</h3>
+      <div class="modal-box gray">
+        Click the <strong>⚖️ Scoring Weights</strong> button in the header to open the weights panel.
+        Each criterion has a slider and +/− buttons. The tool automatically rebalances the other sliders
+        so the total always stays at 100%. When you're done adjusting, click <strong>Recalculate</strong>
+        to re-score and re-rank all 100 cities instantly. Click <strong>Reset to Defaults</strong> to
+        restore the original 30/25/20/15/10 split. Weights are not saved between sessions.
+        <br/><br/>
+        <em>Example:</em> If you're entering a market primarily to avoid competition rather than maximize pipeline,
+        drag "Low Competition" up to 50%+ — cities like Ellensburg and Walla Walla will jump in rank.
+      </div>
+
+      <h3 class="howto-section-title">How Are the Tiers Defined?</h3>
+      <p class="howto-desc">Cities are grouped into 5 tiers by population size. Tier 3 is the prime target zone — big enough to generate consistent advisory work, small enough that national consulting firms haven't saturated it.</p>
+      <table class="src-table howto-table">
+        <thead>
+          <tr><th scope="col">Tier</th><th scope="col">Population</th><th scope="col">Label</th><th scope="col">Strategy Note</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="lt-dot" style="background:#ef4444;display:inline-block;vertical-align:middle;margin-right:4px"></span><strong>Tier 1</strong></td>
+            <td>100,000+</td>
+            <td>Saturated Market</td>
+            <td>Seattle, Spokane, Bellevue — national firms dominate every niche. Entry cost is high; avoid unless you have a protected referral channel.</td>
+          </tr>
+          <tr>
+            <td><span class="lt-dot" style="background:#f97316;display:inline-block;vertical-align:middle;margin-right:4px"></span><strong>Tier 2</strong></td>
+            <td>60k–99k</td>
+            <td>High Competition</td>
+            <td>Secondary metros with organized competition. Differentiation required — a specialty niche or anchor relationship is essential.</td>
+          </tr>
+          <tr>
+            <td><span class="lt-dot" style="background:#10b981;display:inline-block;vertical-align:middle;margin-right:4px"></span><strong>Tier 3 ★</strong></td>
+            <td>30k–59k</td>
+            <td>Prime Opportunity</td>
+            <td>The target zone. Enough SMB pipeline for a full advisory practice; underserved by national competitors. Enter this cycle.</td>
+          </tr>
+          <tr>
+            <td><span class="lt-dot" style="background:#eab308;display:inline-block;vertical-align:middle;margin-right:4px"></span><strong>Tier 4</strong></td>
+            <td>15k–29k</td>
+            <td>Emerging Market</td>
+            <td>Real opportunity but territory coverage needs to span the broader county or sub-region to hit practice-sustaining deal cadence.</td>
+          </tr>
+          <tr>
+            <td><span class="lt-dot" style="background:#94a3b8;display:inline-block;vertical-align:middle;margin-right:4px"></span><strong>Tier 5</strong></td>
+            <td>&lt;15k</td>
+            <td>Micro Market</td>
+            <td>Insufficient standalone pipeline. Viable only as an ancillary stop within a multi-city territory anchored by a higher-tier primary.</td>
+          </tr>
+        </tbody>
+      </table>
+
     </div>
   </div>
 </div>

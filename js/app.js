@@ -27,9 +27,41 @@ const state = {
   selectedCity: null,
   weights: { ...DEFAULT_WEIGHTS },
   viewState: { longitude: -120.5, latitude: 47.0, zoom: 5.9, pitch: 55, bearing: -10 },
+  currentIndustry: null, // set on init to INDUSTRY_OPTIONS[0]
   _mouseX: 0,
   _mouseY: 0
 };
+
+// ── Industry apportionment helpers ─────────────────────────
+function apportionToCity(countyEstabs, city) {
+  const county = CITY_COUNTY_MAP[city.id];
+  if (!county) return 0;
+  const countyPop = COUNTY_POPS[county] || 100000;
+  const share = Math.min(city.population / countyPop, 0.85);
+  let density = 1.0;
+  if (city.population > 200000) density = 1.8;
+  else if (city.population > 100000) density = 1.5;
+  else if (city.population > 50000) density = 1.3;
+  else if (city.population > 20000) density = 1.1;
+  return Math.round((countyEstabs[county] || 0) * share * density);
+}
+
+async function loadIndustryData(industry) {
+  const res = await fetch(industry.file);
+  const raw = await res.json();
+  const headers = raw[0];
+  const nameIdx = headers.indexOf('NAME');
+  const estabIdx = headers.indexOf('ESTAB');
+  const countyEstabs = {};
+  for (let i = 1; i < raw.length; i++) {
+    const row = raw[i];
+    const match = row[nameIdx] && row[nameIdx].match(/^(.+?) County,/);
+    if (match) countyEstabs[match[1]] = parseInt(row[estabIdx]) || 0;
+  }
+  CITY_DATA.forEach(city => {
+    city.consultingFirmCount = apportionToCity(countyEstabs, city);
+  });
+}
 
 // ── Format helpers ─────────────────────────────────────────
 const fmt = {
@@ -97,19 +129,19 @@ function initMap() {
   state.deckgl = new deck.DeckGL({
     container: 'map',
     initialViewState: state.viewState,
-    // Lock all mouse/touch input — only sliders control the view
+    // Allow drag/scroll/pinch — sliders stay in sync via onViewStateChange
     controller: {
-      dragPan: false, scrollZoom: false, doubleClickZoom: false,
-      touchZoom: false, dragRotate: false, keyboard: false
+      dragPan: true, scrollZoom: true, doubleClickZoom: false,
+      touchZoom: true, dragRotate: true, keyboard: false
     },
     parameters: { clearColor: [0, 0, 0, 1] },
     effects: [lightingEffect],
     onViewStateChange: ({ viewState }) => {
-      // Lock center on WA; clamp zoom
+      // Clamp to WA bounding box + zoom range
       viewState = {
         ...viewState,
-        longitude: -120.5,
-        latitude: 47.0,
+        longitude: Math.max(-125.5, Math.min(-116.0, viewState.longitude)),
+        latitude:  Math.max(45.4,   Math.min(49.1,   viewState.latitude)),
         zoom: Math.max(5.9, Math.min(13, viewState.zoom))
       };
       syncRotSlider(viewState.bearing);
@@ -117,7 +149,7 @@ function initMap() {
       state.viewState = viewState;
       state.deckgl.setProps({ viewState });
     },
-    getCursor: () => 'default',
+    getCursor: ({ isDragging }) => isDragging ? 'grabbing' : 'grab',
     layers: []
   });
 }
@@ -803,6 +835,15 @@ function bindEvents() {
     if (e.target === e.currentTarget) document.getElementById('sources-modal').classList.remove('open');
   });
 
+  // How It Works modal
+  document.getElementById('btn-howto').addEventListener('click', () =>
+    document.getElementById('howto-modal').classList.add('open'));
+  document.getElementById('btn-close-howto').addEventListener('click', () =>
+    document.getElementById('howto-modal').classList.remove('open'));
+  document.getElementById('howto-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) document.getElementById('howto-modal').classList.remove('open');
+  });
+
   // Reset map view
   document.getElementById('btn-reset-view').addEventListener('click', () => {
     state.deckgl.setProps({
@@ -862,6 +903,24 @@ function bindEvents() {
   // Spin toggle
   document.getElementById('btn-rotate').addEventListener('click', toggleRotation);
 
+  // Industry switcher
+  document.getElementById('industry-select').addEventListener('change', async function() {
+    const industry = INDUSTRY_OPTIONS.find(o => o.id === this.value);
+    if (!industry) return;
+    state.currentIndustry = industry;
+    this.disabled = true;
+    try {
+      await loadIndustryData(industry);
+    } catch (err) {
+      console.warn('Industry data load failed:', err);
+    }
+    this.disabled = false;
+    // Update the weight label to match selected industry
+    const lbl = document.querySelector('label[for="w-consultingAbsence"]');
+    if (lbl) lbl.textContent = `🏢 Low ${industry.label} Competition`;
+    computeAndRender();
+  });
+
   // Mobile sidebar
   document.getElementById('sidebar-toggle').addEventListener('click', () =>
     document.getElementById('sidebar').classList.toggle('mobile-open'));
@@ -890,6 +949,7 @@ function exportCSV() {
 
 // ── Bootstrap ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  state.currentIndustry = INDUSTRY_OPTIONS[0];
   try {
     initMap();
   } catch (err) {

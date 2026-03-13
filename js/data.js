@@ -1915,3 +1915,73 @@ const CITY_DATA = [
     notes: "A remote Olympic Peninsula community that achieved unexpected international fame through the Twilight novel and film franchise, Forks has diversified from its pure timber heritage to incorporate a meaningful tourism economy that draws visitors year-round to its Twilight-themed attractions and Olympic National Park gateway. The SMB base (28 businesses) is small, with ownership split between long-tenured timber-era entrepreneurs and newer tourism operators, and the $46K median income is among the lowest in the state. With only 1 consulting firm and the geographic isolation of the remote northwestern peninsula, Forks is a market where advisory opportunity exists in aggregate with Port Angeles and Sequim as an Olympic Peninsula circuit — but standalone engagement economics are challenging at this income level."
   }
 ];
+
+// ── City → County lookup (for industry switcher apportionment) ─
+const CITY_COUNTY_MAP = {
+  "seattle":"King","bellevue":"King","kent":"King","renton":"King",
+  "kirkland":"King","redmond":"King","sammamish":"King",
+  "federal-way":"King","auburn":"King","shoreline":"King","burien":"King",
+  "issaquah":"King","seatac":"King","maple-valley":"King","covington":"King",
+  "snoqualmie":"King","enumclaw":"King","woodinville":"King","north-bend":"King",
+  "tacoma":"Pierce","lakewood":"Pierce","puyallup":"Pierce","bonney-lake":"Pierce",
+  "university-place":"Pierce","sumner":"Pierce","orting":"Pierce","gig-harbor":"Pierce",
+  "everett":"Snohomish","marysville":"Snohomish","mukilteo":"Snohomish",
+  "mill-creek":"Snohomish","monroe":"Snohomish","arlington":"Snohomish",
+  "mountlake-terrace":"Snohomish","lynnwood":"Snohomish","bothell":"Snohomish",
+  "edmonds":"Snohomish","snohomish":"Snohomish",
+  "spokane":"Spokane","spokane-valley":"Spokane",
+  "vancouver":"Clark","camas":"Clark","battle-ground":"Clark",
+  "washougal":"Clark","ridgefield":"Clark",
+  "bellingham":"Whatcom","lynden":"Whatcom","ferndale":"Whatcom","blaine":"Whatcom",
+  "kennewick":"Benton","richland":"Benton","prosser":"Benton",
+  "yakima":"Yakima","sunnyside":"Yakima","toppenish":"Yakima",
+  "grandview":"Yakima","selah":"Yakima",
+  "pasco":"Franklin",
+  "olympia":"Thurston","lacey":"Thurston","tumwater":"Thurston",
+  "bremerton":"Kitsap","port-orchard":"Kitsap","poulsbo":"Kitsap",
+  "wenatchee":"Chelan","cashmere":"Chelan","chelan":"Chelan","leavenworth":"Chelan",
+  "east-wenatchee":"Douglas",
+  "mount-vernon":"Skagit","burlington":"Skagit","sedro-woolley":"Skagit","anacortes":"Skagit",
+  "longview":"Cowlitz","kelso":"Cowlitz",
+  "walla-walla":"Walla Walla",
+  "moses-lake":"Grant","ephrata":"Grant","quincy":"Grant","othello":"Grant",
+  "ellensburg":"Kittitas",
+  "port-angeles":"Clallam","sequim":"Clallam","forks":"Clallam",
+  "oak-harbor":"Island",
+  "port-townsend":"Jefferson",
+  "centralia":"Lewis","chehalis":"Lewis",
+  "aberdeen":"Grays Harbor","ocean-shores":"Grays Harbor","montesano":"Grays Harbor",
+  "pullman":"Whitman",
+  "omak":"Okanogan",
+  "colville":"Stevens",
+  "dayton":"Columbia",
+  "raymond":"Pacific",
+  "stevenson":"Skamania",
+  "goldendale":"Klickitat","white-salmon":"Klickitat",
+  "shelton":"Mason"
+};
+
+// ── County population totals (for apportionment) ──────────────
+const COUNTY_POPS = {
+  "King":2310000,"Pierce":935000,"Snohomish":845000,"Spokane":565000,
+  "Clark":510000,"Whatcom":240000,"Benton":210000,"Yakima":258000,
+  "Franklin":105000,"Thurston":305000,"Kitsap":275000,"Chelan":79000,
+  "Douglas":45000,"Skagit":132000,"Cowlitz":113000,"Walla Walla":62000,
+  "Grant":98000,"Kittitas":48000,"Clallam":76000,"Island":88000,
+  "Jefferson":34000,"Lewis":82000,"Grays Harbor":74000,"Whitman":51000,
+  "Okanogan":43000,"Stevens":47000,"Columbia":4100,"Pacific":24000,
+  "Skamania":12500,"Klickitat":23000,"Mason":65000
+};
+
+// ── Industry definitions for the industry switcher ─────────────
+const INDUSTRY_OPTIONS = [
+  { id:'consulting',   label:'M&A / Exit Advisory',       file:'cbp_consulting.json',  naics:'5416', desc:'NAICS 5416 — Management Consulting (default)' },
+  { id:'professional', label:'Professional Services',      file:'cbp_professional.json',naics:'54',   desc:'NAICS 54 — All Professional & Technical Services' },
+  { id:'mfg',          label:'Manufacturing',              file:'cbp_mfg.json',         naics:'31-33',desc:'NAICS 31-33 — Manufacturing' },
+  { id:'retail',       label:'Retail Trade',               file:'cbp_retail.json',      naics:'44-45',desc:'NAICS 44-45 — Retail Trade' },
+  { id:'transport',    label:'Transportation & Logistics', file:'cbp_transport.json',   naics:'48-49',desc:'NAICS 48-49 — Transport & Warehousing' },
+  { id:'construction', label:'Construction',               file:'cbp_naics23.json',     naics:'23',   desc:'NAICS 23 — Construction' },
+  { id:'wholesale',    label:'Wholesale Trade',            file:'cbp_naics42.json',     naics:'42',   desc:'NAICS 42 — Wholesale Trade' },
+  { id:'healthcare',   label:'Healthcare',                 file:'cbp_naics62.json',     naics:'62',   desc:'NAICS 62 — Health Care & Social Assistance' },
+  { id:'food',         label:'Food Service & Hospitality', file:'cbp_naics72.json',     naics:'72',   desc:'NAICS 72 — Accommodation & Food Services' }
+];

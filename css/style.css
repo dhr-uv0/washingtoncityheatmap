@@ -134,6 +134,31 @@ html, body {
 }
 
 /* ── Rotation Slider ───────────────────────────────────────── */
+/* Industry switcher */
+.hd-industry {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.hd-industry-label {
+  font-size: 11px; color: var(--text-3); white-space: nowrap; user-select: none;
+}
+.hd-industry-select {
+  background: var(--bg);
+  border: 1px solid var(--border-md);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-family: inherit; font-size: 11px; font-weight: 500;
+  padding: 5px 10px; cursor: pointer;
+  outline: none; max-width: 200px;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+.hd-industry-select:hover { border-color: var(--red); color: var(--text-1); }
+.hd-industry-select:focus { border-color: var(--red); box-shadow: 0 0 0 2px rgba(220,38,38,.2); }
+.hd-industry-select:disabled { opacity: 0.5; cursor: wait; }
+
 .hd-rotation {
   display: flex; align-items: center; gap: 7px;
   flex-shrink: 0; margin-left: auto;
@@ -783,6 +808,16 @@ html, body {
 .modal-box strong { color: var(--text-1); }
 .modal-hd h2 { font-size: 15px; font-weight: 700; color: var(--text-1); }
 
+/* How It Works modal */
+.howto-section-title {
+  font-size: 13px; font-weight: 700; color: var(--text-1);
+  margin: 18px 0 6px; letter-spacing: .01em;
+}
+.howto-desc { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 10px; }
+.howto-table td:first-child { white-space: nowrap; }
+.hd-btn-howto { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.35); color: #F59E0B; }
+.hd-btn-howto:hover { background: rgba(245,158,11,.22); }
+
 /* ── Mobile ────────────────────────────────────────────────── */
 #sidebar-toggle {
   display: none;
@@ -873,6 +908,7 @@ html, body {
   :root { --dp-w: 100vw; }
 
   .hd-stats    { display: none; }
+  .hd-industry { display: none; }
   .hd-rotation { display: none; }
   .hd-actions  { display: none; }
   .hd-title { font-size: 13px; }

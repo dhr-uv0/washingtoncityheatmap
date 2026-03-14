@@ -63,6 +63,12 @@ async function loadIndustryData(industry) {
   });
 }
 
+// ── Global modal helpers (called via onclick attributes) ────
+function openHowtoModal()  { document.getElementById('howto-modal').classList.add('open'); }
+function closeHowtoModal() { document.getElementById('howto-modal').classList.remove('open'); }
+function openSourcesModal()  { document.getElementById('sources-modal').classList.add('open'); }
+function closeSourcesModal() { document.getElementById('sources-modal').classList.remove('open'); }
+
 // ── Format helpers ─────────────────────────────────────────
 const fmt = {
   num: n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(0)+'k' : String(n),
@@ -372,13 +378,19 @@ function hideTooltip() {
   if (_tip) { _tip.remove(); _tip = null; }
 }
 
+// ── Mobile tab switching ────────────────────────────────────
+function setMobileTab(tab) {
+  document.body.dataset.mobTab = tab;
+  document.querySelectorAll('.mob-tab').forEach(btn =>
+    btn.setAttribute('aria-selected', btn.dataset.tab === tab ? 'true' : 'false'));
+}
+
 // ── City selection ─────────────────────────────────────────
 function selectCity(cityId) {
   state.selectedCity = cityId;
   const city = state.scoredCities.find(c => c.id === cityId);
   if (!city) return;
 
-  // Map stays centered on WA — no fly-to
   document.querySelectorAll('.city-item').forEach(el =>
     el.classList.toggle('active', el.dataset.id === cityId));
 
@@ -386,7 +398,8 @@ function selectCity(cityId) {
   openDetailPanel(city);
 
   if (window.innerWidth < 768) {
-    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.body.classList.add('mob-has-city');
+    setMobileTab('analysis');
   }
 }
 
@@ -589,8 +602,10 @@ function closeDetailPanel() {
   document.getElementById('dp-empty').hidden = false;
   document.getElementById('dp-hero').hidden = true;
   state.selectedCity = null;
+  document.body.classList.remove('mob-has-city');
   document.querySelectorAll('.city-item').forEach(el => el.classList.remove('active'));
   updateLayers();
+  if (window.innerWidth < 768) setMobileTab('map');
 }
 
 // ── Sidebar rendering ──────────────────────────────────────
@@ -835,13 +850,10 @@ function bindEvents() {
     if (e.target === e.currentTarget) document.getElementById('sources-modal').classList.remove('open');
   });
 
-  // How It Works modal
-  document.getElementById('btn-howto').addEventListener('click', () =>
-    document.getElementById('howto-modal').classList.add('open'));
-  document.getElementById('btn-close-howto').addEventListener('click', () =>
-    document.getElementById('howto-modal').classList.remove('open'));
+  // How It Works modal — also wired via global openHowtoModal() for onclick attributes
+  document.getElementById('btn-close-howto').addEventListener('click', closeHowtoModal);
   document.getElementById('howto-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) document.getElementById('howto-modal').classList.remove('open');
+    if (e.target === e.currentTarget) closeHowtoModal();
   });
 
   // Reset map view
@@ -921,7 +933,39 @@ function bindEvents() {
     computeAndRender();
   });
 
-  // Mobile sidebar
+  // Mobile tab bar
+  document.querySelectorAll('.mob-tab').forEach(btn =>
+    btn.addEventListener('click', () => setMobileTab(btn.dataset.tab)));
+
+  // Mobile settings panel buttons
+  document.getElementById('mob-btn-weights').addEventListener('click', () => {
+    const wPanel = document.getElementById('weights-panel');
+    const wBtn   = document.getElementById('btn-weights');
+    const isOpen = wPanel.classList.toggle('open');
+    wBtn.classList.toggle('active', isOpen);
+    wBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+  document.getElementById('mob-btn-export').addEventListener('click', exportCSV);
+  document.getElementById('mob-btn-howto').addEventListener('click', openHowtoModal);
+  document.getElementById('mob-btn-sources').addEventListener('click', openSourcesModal);
+
+  // Sync mobile industry select → main select
+  const mobIndustrySel = document.getElementById('mob-industry-select');
+  const mainIndustrySel = document.getElementById('industry-select');
+  if (mobIndustrySel && mainIndustrySel) {
+    mobIndustrySel.innerHTML = mainIndustrySel.innerHTML;
+    mobIndustrySel.value = mainIndustrySel.value;
+    mobIndustrySel.addEventListener('change', () => {
+      mainIndustrySel.value = mobIndustrySel.value;
+      mainIndustrySel.dispatchEvent(new Event('change'));
+    });
+    mainIndustrySel.addEventListener('change', () => { mobIndustrySel.value = mainIndustrySel.value; });
+  }
+
+  // Init mobile tab state
+  if (window.innerWidth < 768) setMobileTab('map');
+
+  // Legacy sidebar toggle (desktop fallback)
   document.getElementById('sidebar-toggle').addEventListener('click', () =>
     document.getElementById('sidebar').classList.toggle('mobile-open'));
 }

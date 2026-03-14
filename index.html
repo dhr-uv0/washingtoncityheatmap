@@ -97,9 +97,9 @@
   <div class="hd-actions" role="toolbar" aria-label="Map controls">
     <button class="hd-btn" id="btn-rotate" aria-pressed="false">▶ Auto-Rotate</button>
     <button class="hd-btn" id="btn-weights" aria-expanded="false" aria-controls="weights-panel">⚖️ Scoring Weights</button>
-    <button class="hd-btn hd-btn-howto" id="btn-howto" aria-haspopup="dialog">❓ How It Works</button>
+    <button class="hd-btn hd-btn-howto" id="btn-howto" aria-haspopup="dialog" onclick="openHowtoModal()">❓ How It Works</button>
     <button class="hd-btn" id="btn-export" aria-label="Export data as CSV file">⬇ Export CSV</button>
-    <button class="hd-btn" id="btn-sources" aria-haspopup="dialog">📋 Data Sources</button>
+    <button class="hd-btn" id="btn-sources" aria-haspopup="dialog" onclick="openSourcesModal()">📋 Data Sources</button>
   </div>
 </header>
 
@@ -335,7 +335,7 @@
   <div class="modal">
     <div class="modal-hd">
       <h2 id="sources-modal-title">Data Sources &amp; Methodology</h2>
-      <button class="dp-close" id="btn-close-sources" aria-label="Close data sources">✕</button>
+      <button class="dp-close" id="btn-close-sources" aria-label="Close data sources" onclick="closeSourcesModal()">✕</button>
     </div>
     <div class="modal-body">
       <p class="modal-intro">
@@ -385,7 +385,7 @@
   <div class="modal">
     <div class="modal-hd">
       <h2 id="howto-modal-title">How It Works</h2>
-      <button class="dp-close" id="btn-close-howto" aria-label="Close">✕</button>
+      <button class="dp-close" id="btn-close-howto" aria-label="Close" onclick="closeHowtoModal()">✕</button>
     </div>
     <div class="modal-body">
 
@@ -488,6 +488,65 @@
     </div>
   </div>
 </div>
+
+<!-- ══ Mobile Settings Panel (Tab 4) ═════════════════════════ -->
+<div id="mob-settings" aria-label="Settings">
+
+  <div class="mob-settings-section">Industry</div>
+  <div class="mob-settings-industry">
+    <label for="mob-industry-select" class="mob-settings-industry-label">🏭 Target Industry</label>
+    <select id="mob-industry-select" class="mob-industry-select" aria-label="Select target industry">
+      <!-- Options mirrored from #industry-select by JS -->
+    </select>
+  </div>
+
+  <div class="mob-settings-section">Scoring</div>
+  <button class="mob-settings-row" id="mob-btn-weights">
+    <span class="mob-row-left"><span class="mob-row-icon">⚖️</span>Adjust Scoring Weights</span>
+    <span class="mob-row-chevron">›</span>
+  </button>
+
+  <div class="mob-settings-section">Export</div>
+  <button class="mob-settings-row" id="mob-btn-export">
+    <span class="mob-row-left"><span class="mob-row-icon">⬇</span>Export CSV</span>
+    <span class="mob-row-chevron">›</span>
+  </button>
+
+  <div class="mob-settings-section">Learn</div>
+  <button class="mob-settings-row" id="mob-btn-howto">
+    <span class="mob-row-left"><span class="mob-row-icon">❓</span>How It Works</span>
+    <span class="mob-row-chevron">›</span>
+  </button>
+  <button class="mob-settings-row" id="mob-btn-sources">
+    <span class="mob-row-left"><span class="mob-row-icon">📋</span>Data Sources &amp; Methodology</span>
+    <span class="mob-row-chevron">›</span>
+  </button>
+
+  <div class="mob-settings-footer">
+    Data: ACS 2023 · CBP 2022 · BLS BED
+  </div>
+</div>
+
+<!-- ══ Mobile Tab Bar ════════════════════════════════════════ -->
+<nav id="mobile-tabs" aria-label="Mobile navigation">
+  <button class="mob-tab" data-tab="map" aria-selected="true">
+    <span class="mob-tab-icon" aria-hidden="true">🗺️</span>
+    <span class="mob-tab-label">Map</span>
+  </button>
+  <button class="mob-tab" data-tab="rankings" aria-selected="false">
+    <span class="mob-tab-icon" aria-hidden="true">📋</span>
+    <span class="mob-tab-label">Rankings</span>
+  </button>
+  <button class="mob-tab" data-tab="analysis" aria-selected="false">
+    <span class="mob-tab-icon" aria-hidden="true">📊</span>
+    <span class="mob-tab-label">Analysis</span>
+    <span class="mob-tab-badge" aria-hidden="true"></span>
+  </button>
+  <button class="mob-tab" data-tab="settings" aria-selected="false">
+    <span class="mob-tab-icon" aria-hidden="true">⚙️</span>
+    <span class="mob-tab-label">Settings</span>
+  </button>
+</nav>
 
 <!-- Scripts -->
 <script src="js/data.js"></script>

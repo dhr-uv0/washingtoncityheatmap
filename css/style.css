@@ -904,31 +904,182 @@ html, body {
 
 .hidden { display: none !important; }
 
+/* ══════════════════════════════════════════════════════════
+   MOBILE — 4-tab bottom navigation (≤768 px)
+   ══════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  :root { --dp-w: 100vw; }
+  :root {
+    --hd:        44px;
+    --mob-tab-h: 56px;
+    --dp-w:      100vw;
+  }
 
+  /* ── Header: slim brand bar only ── */
+  #header { height: var(--hd); padding: 0 14px; gap: 0; overflow: hidden; }
   .hd-stats    { display: none; }
   .hd-industry { display: none; }
   .hd-rotation { display: none; }
   .hd-actions  { display: none; }
-  .hd-title { font-size: 13px; }
+  .hd-sub      { display: none; }
+  .hd-icon     { font-size: 18px; }
+  .hd-title    { font-size: 14px; font-weight: 800; }
 
-  #sidebar {
+  /* ── Kill old toggle ── */
+  #sidebar-toggle { display: none !important; }
+
+  /* ── Layout box: sits below header, above tab bar ── */
+  #layout { top: var(--hd); }
+
+  /* ── Shared panel base: each tab gets full viewport ── */
+  #map-wrap,
+  #sidebar,
+  #detail-panel,
+  #mob-settings {
     position: fixed;
-    top: var(--hd); left: 0; bottom: 0;
+    top: var(--hd);
+    left: 0; right: 0;
+    bottom: var(--mob-tab-h);
     width: 100vw;
-    transform: translateX(-100%);
-    transition: transform 280ms ease;
-    z-index: 300;
+    display: none;
+    z-index: 50;
   }
-  #sidebar.mobile-open { transform: translateX(0); }
 
-  #sidebar-toggle { display: block; }
-  #map-wrap { width: 100vw; }
-  #legend { bottom: 70px; }
+  /* ── Map tab ── */
+  body[data-mob-tab="map"]      #map-wrap      { display: block; }
 
-  #weights-panel { right: 8px; left: 8px; width: auto; }
+  /* ── Rankings tab ── */
+  body[data-mob-tab="rankings"] #sidebar       { display: flex; flex-direction: column; }
+  /* Cancel desktop translateX animation */
+  #sidebar { transform: none !important; transition: none !important; }
 
-  .dp-grid { grid-template-columns: 1fr; }
+  /* ── Analysis tab ── */
+  body[data-mob-tab="analysis"] #detail-panel  { display: flex; }
+  /* Cancel desktop slide-in transform */
+  #detail-panel {
+    transform: none !important;
+    box-shadow: none;
+  }
+  /* Hide close ✕ on mobile — back via Map/Rankings tab */
+  .dp-close { display: none; }
+  .dp-grid  { grid-template-columns: 1fr; }
   .dp-score { font-size: 40px; }
+
+  /* ── Settings tab ── */
+  body[data-mob-tab="settings"] #mob-settings  { display: flex; flex-direction: column; overflow-y: auto; }
+
+  /* ── Map overlays: nudge above tab bar ── */
+  #legend      { bottom: calc(var(--mob-tab-h) + 10px); right: 10px; }
+  #zoom-ctrl   { bottom: calc(var(--mob-tab-h) + 14px); }
+  .map-ctrl    { top: 10px; right: 10px; }
+
+  /* ── Weights panel: full-width, below slim header ── */
+  #weights-panel {
+    top: calc(var(--hd) + 6px);
+    right: 8px; left: 8px; width: auto;
+    z-index: 500;
+  }
+
+  /* ════════════════════════════════════════════
+     Mobile Settings Panel
+     ════════════════════════════════════════════ */
+  #mob-settings { background: var(--bg-card); }
+
+  .mob-settings-section {
+    padding: 12px 16px 6px;
+    font-size: 10px; font-weight: 700; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: .08em;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .mob-settings-industry {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mob-settings-industry-label {
+    font-size: 12px; color: var(--text-2); font-weight: 600;
+  }
+  .mob-industry-select {
+    width: 100%;
+    padding: 11px 36px 11px 12px;
+    font-size: 15px; font-family: inherit; font-weight: 500;
+    background: var(--bg);
+    border: 1px solid var(--border-md);
+    border-radius: var(--r-sm);
+    color: var(--text-1);
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+  }
+  .mob-settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 16px;
+    background: var(--bg-card);
+    border: none; border-bottom: 1px solid var(--border);
+    color: var(--text-1); font-family: inherit; font-size: 15px;
+    cursor: pointer; text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-settings-row:active { background: rgba(255,255,255,.04); }
+  .mob-row-left { display: flex; align-items: center; gap: 12px; }
+  .mob-row-icon { font-size: 20px; }
+  .mob-row-chevron { color: var(--text-3); font-size: 18px; }
+  .mob-settings-footer {
+    padding: 20px 16px;
+    font-size: 11px; color: var(--text-3); text-align: center;
+    margin-top: auto;
+  }
+
+  /* ════════════════════════════════════════════
+     Bottom Tab Bar
+     ════════════════════════════════════════════ */
+  #mobile-tabs {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--mob-tab-h);
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    z-index: 1100;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.55);
+  }
+  .mob-tab {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    background: none; border: none;
+    color: var(--text-3); font-family: inherit;
+    cursor: pointer; padding: 6px 2px;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 150ms ease;
+  }
+  .mob-tab:active { background: rgba(255,255,255,.04); }
+  .mob-tab-icon  { font-size: 22px; line-height: 1; }
+  .mob-tab-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+
+  /* Active state */
+  .mob-tab[aria-selected="true"] { color: var(--red); }
+  .mob-tab[aria-selected="true"]::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%;
+    height: 2px; background: var(--red);
+    border-radius: 0 0 3px 3px;
+  }
+
+  /* Green dot on Analysis tab when city is selected */
+  .mob-tab-badge {
+    position: absolute; top: 7px; right: calc(50% - 16px);
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #10b981; display: none;
+    border: 1.5px solid var(--bg-card);
+  }
+  body.mob-has-city .mob-tab[data-tab="analysis"] .mob-tab-badge { display: block; }
+}
+
+/* ── Desktop: hide mobile-only elements ─────────────────── */
+@media (min-width: 769px) {
+  #mobile-tabs  { display: none !important; }
+  #mob-settings { display: none !important; }
 }

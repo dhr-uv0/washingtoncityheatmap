@@ -553,7 +553,6 @@ html, body {
   text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
 }
 /* Close button — absolutely positioned top-right of the legend box */
-#legend { position: relative; }
 .legend-close {
   position: absolute; top: 6px; right: 6px;
   width: 28px; height: 28px;

@@ -551,7 +551,26 @@ html, body {
 .legend-title {
   font-size: 10px; font-weight: 700; color: var(--text-3);
   text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
+.legend-close {
+  background: none; border: none; color: var(--text-3); cursor: pointer;
+  font-size: 11px; padding: 0 2px; line-height: 1; margin-bottom: 0;
+  font-family: inherit; flex-shrink: 0;
+}
+.legend-close:hover { color: var(--text-1); }
+/* Collapsed state — only show the title row */
+#legend.legend-collapsed .legend-spike-demo,
+#legend.legend-collapsed .legend-notes,
+#legend.legend-collapsed .legend-divider,
+#legend.legend-collapsed .legend-tier-note,
+#legend.legend-collapsed .legend-tiers { display: none; }
+#legend.legend-collapsed .legend-title { margin-bottom: 0; }
+#legend.legend-collapsed .legend-close { content: ''; }
+/* Change ✕ to ☰ when collapsed */
+#legend.legend-collapsed .legend-close::before { content: '☰'; }
+#legend:not(.legend-collapsed) .legend-close::before { content: '✕'; }
+#legend .legend-close { font-size: 0; } /* hide the HTML ✕, use ::before instead */
 .legend-spike-demo {
   display: flex; align-items: flex-end; gap: 10px;
   margin-bottom: 10px; padding: 8px 0;

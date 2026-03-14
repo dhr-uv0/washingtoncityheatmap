@@ -146,9 +146,9 @@ function initMap() {
       // Clamp to WA bounding box + zoom range
       viewState = {
         ...viewState,
-        longitude: Math.max(-125.5, Math.min(-116.0, viewState.longitude)),
-        latitude:  Math.max(45.4,   Math.min(49.1,   viewState.latitude)),
-        zoom: Math.max(5.9, Math.min(13, viewState.zoom))
+        longitude: Math.max(-127, Math.min(-114, viewState.longitude)),
+        latitude:  Math.max(43.5, Math.min(50.5, viewState.latitude)),
+        zoom: Math.max(4.0, Math.min(13, viewState.zoom))
       };
       syncRotSlider(viewState.bearing);
       syncZoomSlider(viewState.zoom);
@@ -904,7 +904,7 @@ function bindEvents() {
 
   // Zoom +/- buttons
   function stepZoom(delta) {
-    const zoom = Math.max(5.9, Math.min(13, (state.viewState.zoom || 5.9) + delta));
+    const zoom = Math.max(4.0, Math.min(13, (state.viewState.zoom || 5.9) + delta));
     state.viewState = { ...state.viewState, zoom };
     state.deckgl.setProps({ viewState: state.viewState });
     syncZoomSlider(zoom);

@@ -230,15 +230,15 @@
     <div id="zoom-ctrl" role="group" aria-label="Map zoom">
       <button class="map-ctrl-btn" id="btn-zoom-in" aria-label="Zoom in">+</button>
       <div class="zoom-slider-wrap">
-        <input type="range" id="zoom-slider" min="59" max="130" step="1" value="59"
-          aria-label="Map zoom level" aria-valuemin="59" aria-valuemax="130" />
+        <input type="range" id="zoom-slider" min="40" max="130" step="1" value="59"
+          aria-label="Map zoom level" aria-valuemin="40" aria-valuemax="130" />
       </div>
       <button class="map-ctrl-btn" id="btn-zoom-out" aria-label="Zoom out">−</button>
     </div>
 
     <!-- Legend -->
     <div id="legend" role="note" aria-label="Map legend">
-      <div class="legend-title">Opportunity Score</div>
+      <div class="legend-title">Opportunity Score <button class="legend-close" onclick="document.getElementById('legend').classList.toggle('legend-collapsed')" aria-label="Toggle legend">✕</button></div>
       <div class="legend-spike-demo" aria-hidden="true">
         <div class="lsd-col">
           <div class="lsd-bar high"></div>

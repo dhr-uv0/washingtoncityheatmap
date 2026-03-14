@@ -962,8 +962,11 @@ function bindEvents() {
     mainIndustrySel.addEventListener('change', () => { mobIndustrySel.value = mainIndustrySel.value; });
   }
 
-  // Init mobile tab state
-  if (window.innerWidth < 768) setMobileTab('map');
+  // Init mobile tab state + collapse legend by default on mobile
+  if (window.innerWidth < 768) {
+    setMobileTab('map');
+    document.getElementById('legend').classList.add('legend-collapsed');
+  }
 
   // Legacy sidebar toggle (desktop fallback)
   document.getElementById('sidebar-toggle').addEventListener('click', () =>

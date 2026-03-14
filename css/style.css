@@ -990,9 +990,23 @@ html, body {
   body[data-mob-tab="settings"] #mob-settings  { display: flex; flex-direction: column; overflow-y: auto; }
 
   /* ── Map overlays: nudge above tab bar ── */
-  #legend      { bottom: calc(var(--mob-tab-h) + 10px); right: 10px; }
+  #legend      { bottom: calc(var(--mob-tab-h) + 10px); left: auto; right: 10px; }
   #zoom-ctrl   { bottom: calc(var(--mob-tab-h) + 14px); }
   .map-ctrl    { top: 10px; right: 10px; }
+
+  /* ── Legend close button: bigger tap target on mobile ── */
+  .legend-close {
+    width: 36px; height: 36px; font-size: 16px;
+    top: 4px; right: 4px;
+  }
+  /* Collapsed legend: show a compact "Legend" re-open pill */
+  #legend.legend-collapsed {
+    padding: 8px 44px 8px 12px;
+    cursor: pointer;
+  }
+  #legend.legend-collapsed .legend-title {
+    font-size: 11px; white-space: nowrap; margin-bottom: 0;
+  }
 
   /* ── Weights panel: full-width, below slim header ── */
   #weights-panel {

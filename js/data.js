@@ -13,11 +13,11 @@
  *
  * SMB DEFINITION: 5–249 employees, NAICS 23/31-33/42/44-45/48-49/54/62/72
  * TIER SYSTEM:  1=100k+  2=60-99k  3=30-59k  4=15-29k  5=<15k  (by ACS pop)
- * lastUpdated: "2026-04"
+ * lastUpdated: "2026-05"
  */
 
 const DATA_METADATA = {
-  lastUpdated: "2026-04",
+  lastUpdated: "2026-05",
   dataYear: 2024,
   sources: [
     {
